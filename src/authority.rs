@@ -1,8 +1,10 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::enums::{ArtifactClass, RepoArchetype, SourceFamily};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct AuthorityResolutionRecord {
     pub schema_version: String,
     pub repo_id: String,

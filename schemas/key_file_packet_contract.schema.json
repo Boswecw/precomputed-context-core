@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "AdmissibilityState": {
+      "enum": [
+        "admissible",
+        "admissible_with_warning",
+        "restricted",
+        "not_admissible"
+      ],
+      "type": "string"
+    },
+    "ArtifactClass": {
+      "enum": [
+        "repo_navigation_map",
+        "key_file_packet",
+        "validation_command_packet"
+      ],
+      "type": "string"
+    },
+    "ArtifactRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "admissibility_state": {
+          "$ref": "#/definitions/AdmissibilityState"
+        },
+        "artifact_class": {
+          "$ref": "#/definitions/ArtifactClass"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "authority_level": {
+          "$ref": "#/definitions/AuthorityLevel"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "critic_status": {
+          "$ref": "#/definitions/CriticStatus"
+        },
+        "freshness_state": {
+          "$ref": "#/definitions/FreshnessState"
+        },
+        "last_validated_at": {
+          "type": "string"
+        },
+        "lifecycle_state": {
+          "$ref": "#/definitions/LifecycleState"
+        },
+        "operational_purpose": {
+          "type": "string"
+        },
+        "producer_identity": {
+          "type": "string"
+        },
+        "protocol_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "related_artifact_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "repo_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "sensitivity_classification": {
+          "$ref": "#/definitions/SensitivityClassification"
+        },
+        "source_ref_hashes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "summary_block": {
+          "type": "string"
+        },
+        "supersedes_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "admissibility_state",
+        "artifact_class",
+        "artifact_id",
+        "authority_level",
+        "created_at",
+        "critic_status",
+        "freshness_state",
+        "last_validated_at",
+        "lifecycle_state",
+        "operational_purpose",
+        "producer_identity",
+        "protocol_refs",
+        "related_artifact_refs",
+        "repo_id",
+        "schema_version",
+        "sensitivity_classification",
+        "source_ref_hashes",
+        "source_refs",
+        "summary_block",
+        "title"
+      ],
+      "type": "object"
+    },
+    "AuthorityLevel": {
+      "enum": [
+        "canonical",
+        "strong_derived",
+        "weak_derived",
+        "provisional"
+      ],
+      "type": "string"
+    },
+    "CriticStatus": {
+      "enum": [
+        "not_reviewed",
+        "passed",
+        "passed_with_concerns",
+        "failed",
+        "remediation_required"
+      ],
+      "type": "string"
+    },
+    "FreshnessState": {
+      "enum": [
+        "fresh",
+        "review_due",
+        "stale",
+        "invalidated"
+      ],
+      "type": "string"
+    },
+    "LifecycleState": {
+      "enum": [
+        "candidate",
+        "approved",
+        "superseded",
+        "blocked",
+        "retired"
+      ],
+      "type": "string"
+    },
+    "SensitivityClassification": {
+      "enum": [
+        "internal_general",
+        "internal_sensitive",
+        "restricted_runtime"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "base": {
+      "$ref": "#/definitions/ArtifactRecord"
+    },
+    "dependent_surfaces": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "edit_cautions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "file_path": {
+      "type": "string"
+    },
+    "read_before_edit_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "why_it_matters": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "base",
+    "dependent_surfaces",
+    "edit_cautions",
+    "file_path",
+    "read_before_edit_refs",
+    "why_it_matters"
+  ],
+  "title": "KeyFilePacketContract",
+  "type": "object"
+}

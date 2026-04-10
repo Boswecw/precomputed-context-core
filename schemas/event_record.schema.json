@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "EventType": {
+      "enum": [
+        "source_changed",
+        "source_moved",
+        "source_deleted",
+        "source_validation_changed",
+        "authority_record_changed",
+        "artifact_candidate_created",
+        "artifact_validation_passed",
+        "artifact_validation_failed",
+        "artifact_approved",
+        "artifact_blocked",
+        "artifact_freshness_changed",
+        "artifact_invalidated",
+        "artifact_superseded",
+        "remediation_created",
+        "remediation_triaged",
+        "remediation_repair_started",
+        "remediation_resolved",
+        "remediation_closed_without_repair",
+        "packet_candidate_created",
+        "packet_composed",
+        "packet_approved",
+        "packet_invalidated",
+        "packet_revalidated",
+        "packet_admissibility_changed",
+        "operator_override_created",
+        "operator_override_expired",
+        "operator_override_revoked",
+        "governance_rule_changed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "causation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "emitted_at": {
+      "type": "string"
+    },
+    "emitter_service": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "event_payload": {
+      "type": "string"
+    },
+    "event_type": {
+      "$ref": "#/definitions/EventType"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "related_artifact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "related_packet_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "repo_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "correlation_id",
+    "emitted_at",
+    "emitter_service",
+    "event_id",
+    "event_payload",
+    "event_type",
+    "idempotency_key",
+    "related_artifact_ids",
+    "related_packet_ids",
+    "repo_id",
+    "schema_version",
+    "source_refs"
+  ],
+  "title": "EventRecord",
+  "type": "object"
+}

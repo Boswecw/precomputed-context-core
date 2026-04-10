@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "AffectedObjectType": {
+      "enum": [
+        "artifact",
+        "packet",
+        "authority_record",
+        "source_ref"
+      ],
+      "type": "string"
+    },
+    "BlockingStatus": {
+      "enum": [
+        "non_blocking",
+        "warning_only",
+        "blocking"
+      ],
+      "type": "string"
+    },
+    "RemediationStatus": {
+      "enum": [
+        "none",
+        "open",
+        "triaged",
+        "in_repair",
+        "resolved",
+        "closed_without_repair"
+      ],
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "affected_object_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "affected_object_type": {
+      "$ref": "#/definitions/AffectedObjectType"
+    },
+    "blocking_status": {
+      "$ref": "#/definitions/BlockingStatus"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "issue_type": {
+      "type": "string"
+    },
+    "recommended_action": {
+      "type": "string"
+    },
+    "remediation_id": {
+      "type": "string"
+    },
+    "repo_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/definitions/Severity"
+    },
+    "status": {
+      "$ref": "#/definitions/RemediationStatus"
+    }
+  },
+  "required": [
+    "affected_object_ids",
+    "affected_object_type",
+    "blocking_status",
+    "created_at",
+    "issue_type",
+    "recommended_action",
+    "remediation_id",
+    "repo_id",
+    "schema_version",
+    "severity",
+    "status"
+  ],
+  "title": "RemediationItem",
+  "type": "object"
+}

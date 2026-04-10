@@ -1,3 +1,4 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::enums::{
@@ -6,7 +7,8 @@ use crate::enums::{
     RemediationStatus, SensitivityClassification, Severity,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ArtifactRecord {
     pub schema_version: String,
     pub artifact_id: String,
@@ -31,7 +33,8 @@ pub struct ArtifactRecord {
     pub sensitivity_classification: SensitivityClassification,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct PacketRecord {
     pub schema_version: String,
     pub packet_id: String,
@@ -51,7 +54,8 @@ pub struct PacketRecord {
     pub sensitivity_classification: SensitivityClassification,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct RemediationItem {
     pub schema_version: String,
     pub remediation_id: String,
@@ -93,7 +97,8 @@ impl RemediationItem {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct OverrideRecord {
     pub schema_version: String,
     pub override_id: String,

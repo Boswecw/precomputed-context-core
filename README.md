@@ -6,10 +6,10 @@ Core Rust crate for the BDS Precomputed Context Program proof slice.
 
 - authority resolution record validation
 - lifecycle and freshness state algebra
-- first-wave artifact contract validation
-- packet admissibility rules
+- first-wave artifact and packet contract validation
 - event dedupe and coalescing substrate
-- example fixture bundle validation
+- fixture bundle validation
+- JSON schema export for first-wave governed contracts
 - override non-mutation discipline
 
 ## Why this crate exists
@@ -29,11 +29,12 @@ This crate is the governed proof-slice core for the precomputed-context program.
 ## Current proof targets
 
 - authority resolution fails closed when precedence or allowed sources are invalid
-- first-wave artifact contracts validate as concrete shapes
-- packet admissibility fails closed when required constituents degrade
+- first-wave contract fixtures parse under strict typed shapes
+- valid fixtures pass semantic validation
+- invalid fixtures fail semantic validation
 - event dedupe works by idempotency key
 - event batches coalesce by repo plus correlated source scope
-- fixture bundle provides valid and invalid examples for proof checks
+- JSON schemas export cleanly for reuse outside Rust-only validation
 - overrides do not mutate underlying governed truth
 
 ## Check
@@ -41,3 +42,5 @@ This crate is the governed proof-slice core for the precomputed-context program.
 Run: cargo test
 
 Run: cargo run --bin fixture_check
+
+Run: cargo run --bin export_schemas

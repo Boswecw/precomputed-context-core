@@ -4,6 +4,7 @@ pub mod enums;
 pub mod events;
 pub mod fixture_bundle;
 pub mod models;
+pub mod schema_bundle;
 pub mod state_machine;
 
 pub use authority::AuthorityResolutionRecord;
@@ -294,5 +295,23 @@ mod tests {
             .collect();
 
         assert!(failures.is_empty(), "fixture bundle failures: {:?}", failures);
+    }
+
+    #[test]
+    fn schema_catalog_contains_expected_contract_surfaces() {
+        let names: Vec<&str> = schema_bundle::schema_catalog()
+            .iter()
+            .map(|(name, _)| *name)
+            .collect();
+
+        assert_eq!(names.len(), 8);
+        assert!(names.contains(&"authority_resolution_record.schema.json"));
+        assert!(names.contains(&"repo_navigation_map_contract.schema.json"));
+        assert!(names.contains(&"key_file_packet_contract.schema.json"));
+        assert!(names.contains(&"validation_command_packet_contract.schema.json"));
+        assert!(names.contains(&"repo_navigation_assist_packet_contract.schema.json"));
+        assert!(names.contains(&"event_record.schema.json"));
+        assert!(names.contains(&"remediation_item.schema.json"));
+        assert!(names.contains(&"override_record.schema.json"));
     }
 }

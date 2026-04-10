@@ -19,11 +19,85 @@ pub struct FixtureReport {
     pub detail: String,
 }
 
+const EXPECTED_VALID: &[&str] = &[
+    "authority_resolution_record_forgecommand.json",
+    "repo_navigation_map.json",
+    "key_file_packet.json",
+    "validation_command_packet.json",
+    "repo_navigation_assist_packet.json",
+    "invalidation_event_source_move.json",
+    "remediation_item_source_move.json",
+    "override_record_controlled_packet_admission.json",
+];
+
+const EXPECTED_INVALID: &[&str] = &[
+    "authority_resolution_record_disallowed_overlap.json",
+    "repo_navigation_map_candidate_admissible.json",
+    "key_file_packet_hash_mismatch.json",
+    "validation_command_packet_invalidated_admissible.json",
+    "repo_navigation_assist_packet_missing_constituent_gate.json",
+    "invalidation_event_missing_idempotency_key.json",
+];
+
 fn read_json<T: DeserializeOwned>(path: &Path) -> Result<T, String> {
     let raw = fs::read_to_string(path)
         .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
     serde_json::from_str::<T>(&raw)
         .map_err(|err| format!("failed to parse {}: {}", path.display(), err))
+}
+
+fn inventory_reports(dir: &Path, expected: &[&str], label_prefix: &str) -> Vec<FixtureReport> {
+    let mut reports = Vec::new();
+
+    let actual_entries = match fs::read_dir(dir) {
+        Ok(entries) => entries,
+        Err(err) => {
+            reports.push(FixtureReport {
+                label: format!("{}_inventory", label_prefix),
+                path: dir.to_path_buf(),
+                passed: false,
+                detail: format!("failed to read fixture directory: {}", err),
+            });
+            return reports;
+        }
+    };
+
+    let mut actual_files: Vec<String> = actual_entries
+        .filter_map(Result::ok)
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .collect();
+
+    actual_files.sort();
+
+    for expected_name in expected {
+        let path = dir.join(expected_name);
+        reports.push(FixtureReport {
+            label: format!("{}_required_file", label_prefix),
+            path: path.clone(),
+            passed: path.exists(),
+            detail: if path.exists() {
+                "required fixture present".into()
+            } else {
+                "required fixture missing".into()
+            },
+        });
+    }
+
+    for actual in actual_files {
+        let known = expected.iter().any(|expected_name| *expected_name == actual);
+        reports.push(FixtureReport {
+            label: format!("{}_unexpected_file_check", label_prefix),
+            path: dir.join(&actual),
+            passed: known,
+            detail: if known {
+                "fixture file is in expected inventory".into()
+            } else {
+                "unexpected fixture file present".into()
+            },
+        });
+    }
+
+    reports
 }
 
 fn check_valid<T, F>(label: &str, path: PathBuf, validate: F) -> FixtureReport
@@ -80,7 +154,11 @@ pub fn run_fixture_bundle(root: &Path) -> Vec<FixtureReport> {
     let valid = root.join("fixtures").join("valid");
     let invalid = root.join("fixtures").join("invalid");
 
-    vec![
+    let mut reports = Vec::new();
+    reports.extend(inventory_reports(&valid, EXPECTED_VALID, "valid"));
+    reports.extend(inventory_reports(&invalid, EXPECTED_INVALID, "invalid"));
+
+    reports.extend(vec![
         check_valid::<AuthorityResolutionRecord, _>(
             "valid_authority_resolution_record",
             valid.join("authority_resolution_record_forgecommand.json"),
@@ -151,7 +229,9 @@ pub fn run_fixture_bundle(root: &Path) -> Vec<FixtureReport> {
             invalid.join("invalidation_event_missing_idempotency_key.json"),
             |value| value.validate(),
         ),
-    ]
+    ]);
+
+    reports
 }
 
 pub fn bundle_passed(reports: &[FixtureReport]) -> bool {

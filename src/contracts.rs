@@ -1,10 +1,12 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::enums::ArtifactClass;
 use crate::models::{ArtifactRecord, PacketRecord};
 use crate::state_machine::{validate_artifact_state, validate_packet_state};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct RepoNavigationMapContract {
     pub base: ArtifactRecord,
     pub primary_directories: Vec<String>,
@@ -35,7 +37,8 @@ impl RepoNavigationMapContract {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct KeyFilePacketContract {
     pub base: ArtifactRecord,
     pub file_path: String,
@@ -70,7 +73,8 @@ impl KeyFilePacketContract {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ValidationCommandPacketContract {
     pub base: ArtifactRecord,
     pub commands: Vec<String>,
@@ -101,7 +105,8 @@ impl ValidationCommandPacketContract {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct RepoNavigationAssistPacketContract {
     pub base: PacketRecord,
 }

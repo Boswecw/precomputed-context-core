@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "AffectedObjectType": {
+      "enum": [
+        "artifact",
+        "packet",
+        "authority_record",
+        "source_ref"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "actor_identity": {
+      "type": "string"
+    },
+    "affected_object_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "affected_object_type": {
+      "$ref": "#/definitions/AffectedObjectType"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "expiry_time": {
+      "type": "string"
+    },
+    "override_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "review_required_by": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "start_time": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "actor_identity",
+    "affected_object_ids",
+    "affected_object_type",
+    "created_at",
+    "expiry_time",
+    "override_id",
+    "reason",
+    "review_required_by",
+    "schema_version",
+    "scope",
+    "start_time"
+  ],
+  "title": "OverrideRecord",
+  "type": "object"
+}

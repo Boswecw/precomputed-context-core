@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ArtifactClass": {
+      "enum": [
+        "repo_navigation_map",
+        "key_file_packet",
+        "validation_command_packet"
+      ],
+      "type": "string"
+    },
+    "RepoArchetype": {
+      "enum": [
+        "service_api_repo",
+        "desktop_app_repo",
+        "protocol_documentation_repo",
+        "shared_contract_library_repo"
+      ],
+      "type": "string"
+    },
+    "SourceFamily": {
+      "enum": [
+        "code_runtime",
+        "contract_schema",
+        "test_verification",
+        "repo_truth_doc",
+        "protocol_doc",
+        "architecture_decision",
+        "generated_output",
+        "advisory_note"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "ambiguity_rules": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "approved_derivation_scope": {
+      "items": {
+        "$ref": "#/definitions/ArtifactClass"
+      },
+      "type": "array"
+    },
+    "approved_source_families": {
+      "items": {
+        "$ref": "#/definitions/SourceFamily"
+      },
+      "type": "array"
+    },
+    "authority_order": {
+      "items": {
+        "$ref": "#/definitions/SourceFamily"
+      },
+      "type": "array"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "disallowed_source_families": {
+      "items": {
+        "$ref": "#/definitions/SourceFamily"
+      },
+      "type": "array"
+    },
+    "escalation_required_conditions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "last_reviewed_at": {
+      "type": "string"
+    },
+    "notes_on_known_authority_gaps": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operator_review_required_conditions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "repo_archetype": {
+      "$ref": "#/definitions/RepoArchetype"
+    },
+    "repo_id": {
+      "type": "string"
+    },
+    "repo_name": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ambiguity_rules",
+    "approved_derivation_scope",
+    "approved_source_families",
+    "authority_order",
+    "created_at",
+    "disallowed_source_families",
+    "escalation_required_conditions",
+    "last_reviewed_at",
+    "operator_review_required_conditions",
+    "repo_archetype",
+    "repo_id",
+    "repo_name",
+    "schema_version"
+  ],
+  "title": "AuthorityResolutionRecord",
+  "type": "object"
+}

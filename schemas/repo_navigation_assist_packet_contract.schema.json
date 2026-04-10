@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "AdmissibilityState": {
+      "enum": [
+        "admissible",
+        "admissible_with_warning",
+        "restricted",
+        "not_admissible"
+      ],
+      "type": "string"
+    },
+    "PacketLifecycleState": {
+      "enum": [
+        "candidate",
+        "approved",
+        "blocked",
+        "retired"
+      ],
+      "type": "string"
+    },
+    "PacketRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "admissibility_state": {
+          "$ref": "#/definitions/AdmissibilityState"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "included_artifact_hashes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "included_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lane_compatibility": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "last_evaluated_at": {
+          "type": "string"
+        },
+        "lifecycle_state": {
+          "$ref": "#/definitions/PacketLifecycleState"
+        },
+        "packet_budget_band": {
+          "type": "string"
+        },
+        "packet_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "packet_id": {
+          "type": "string"
+        },
+        "packet_role": {
+          "$ref": "#/definitions/PacketRole"
+        },
+        "reevaluation_required": {
+          "type": "boolean"
+        },
+        "repo_id": {
+          "type": "string"
+        },
+        "required_constituents_present": {
+          "type": "boolean"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "sensitivity_classification": {
+          "$ref": "#/definitions/SensitivityClassification"
+        }
+      },
+      "required": [
+        "admissibility_state",
+        "created_at",
+        "included_artifact_hashes",
+        "included_artifact_ids",
+        "lane_compatibility",
+        "last_evaluated_at",
+        "lifecycle_state",
+        "packet_budget_band",
+        "packet_constraints",
+        "packet_id",
+        "packet_role",
+        "reevaluation_required",
+        "repo_id",
+        "required_constituents_present",
+        "schema_version",
+        "sensitivity_classification"
+      ],
+      "type": "object"
+    },
+    "PacketRole": {
+      "enum": [
+        "repo_navigation_assist"
+      ],
+      "type": "string"
+    },
+    "SensitivityClassification": {
+      "enum": [
+        "internal_general",
+        "internal_sensitive",
+        "restricted_runtime"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "base": {
+      "$ref": "#/definitions/PacketRecord"
+    }
+  },
+  "required": [
+    "base"
+  ],
+  "title": "RepoNavigationAssistPacketContract",
+  "type": "object"
+}

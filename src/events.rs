@@ -1,10 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::enums::EventType;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct EventRecord {
     pub event_id: String,
     pub event_type: EventType,
