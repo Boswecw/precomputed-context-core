@@ -3,6 +3,7 @@ pub mod contracts;
 pub mod enums;
 pub mod events;
 pub mod fixture_bundle;
+pub mod invalidation_engine;
 pub mod models;
 pub mod proof_bundle;
 pub mod remediation_flow;
@@ -19,6 +20,13 @@ pub use contracts::{
 };
 pub use enums::*;
 pub use events::{EventBatch, EventLedger, EventProcessingDecision, EventRecord};
+pub use invalidation_engine::{
+    apply_artifact_invalidation,
+    apply_packet_constituent_change,
+    ArtifactInvalidationDecision,
+    ArtifactInvalidationOutcome,
+    PacketInvalidationOutcome,
+};
 pub use models::{ArtifactRecord, OverrideRecord, PacketRecord, RemediationItem};
 pub use remediation_flow::{
     plan_artifact_remediation,
