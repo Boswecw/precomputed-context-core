@@ -1,0 +1,10 @@
+[package]
+name = "precomputed-context-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "precomputed_context_core"
+path = "src/lib.rs"
+
+[dependencies]
