@@ -1,16 +1,7 @@
 use crate::{
-    compute_default_artifact_admissibility,
-    compute_default_packet_admissibility,
-    remediation_required_for_packet,
-    plan_artifact_remediation,
-    AdmissibilityState,
-    ArtifactRecord,
-    CriticStatus,
-    EventRecord,
-    EventType,
-    FreshnessState,
-    LifecycleState,
-    PacketRecord,
+    compute_default_artifact_admissibility, compute_default_packet_admissibility,
+    plan_artifact_remediation, remediation_required_for_packet, ArtifactRecord, EventRecord,
+    EventType, FreshnessState, LifecycleState, PacketRecord,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -52,11 +43,12 @@ fn artifact_event_overlaps(event: &EventRecord, artifact: &ArtifactRecord) -> bo
         return true;
     }
 
-    if event
-        .source_refs
-        .iter()
-        .any(|source_ref| artifact.source_refs.iter().any(|artifact_ref| artifact_ref == source_ref))
-    {
+    if event.source_refs.iter().any(|source_ref| {
+        artifact
+            .source_refs
+            .iter()
+            .any(|artifact_ref| artifact_ref == source_ref)
+    }) {
         return true;
     }
 
@@ -75,7 +67,9 @@ fn classify_freshness_downgrade(
             FreshnessState::Invalidated => ArtifactInvalidationDecision::Invalidated,
         },
         EventType::SourceValidationChanged => match current {
-            FreshnessState::Fresh | FreshnessState::ReviewDue => ArtifactInvalidationDecision::Stale,
+            FreshnessState::Fresh | FreshnessState::ReviewDue => {
+                ArtifactInvalidationDecision::Stale
+            }
             FreshnessState::Stale => ArtifactInvalidationDecision::Stale,
             FreshnessState::Invalidated => ArtifactInvalidationDecision::Invalidated,
         },
@@ -183,11 +177,12 @@ pub fn apply_packet_constituent_change(
         .map(|artifact| artifact.lifecycle_state)
         .collect();
 
-    let reevaluation_required = freshness.iter().any(|state| {
-        matches!(state, FreshnessState::Stale | FreshnessState::Invalidated)
-    }) || lifecycle.iter().any(|state| {
-        matches!(state, LifecycleState::Blocked | LifecycleState::Superseded)
-    });
+    let reevaluation_required = freshness
+        .iter()
+        .any(|state| matches!(state, FreshnessState::Stale | FreshnessState::Invalidated))
+        || lifecycle
+            .iter()
+            .any(|state| matches!(state, LifecycleState::Blocked | LifecycleState::Superseded));
 
     let mut updated = packet.clone();
     if reevaluation_required {
@@ -202,8 +197,7 @@ pub fn apply_packet_constituent_change(
         &lifecycle,
     );
 
-    let remediation_required =
-        remediation_required_for_packet(&updated, &freshness, &lifecycle);
+    let remediation_required = remediation_required_for_packet(&updated, &freshness, &lifecycle);
 
     PacketInvalidationOutcome {
         packet: updated,
@@ -221,25 +215,13 @@ pub fn apply_packet_constituent_change(
 #[cfg(test)]
 mod tests {
     use crate::{
-        AdmissibilityState,
-        ArtifactClass,
-        ArtifactRecord,
-        AuthorityLevel,
-        CriticStatus,
-        EventRecord,
-        EventType,
-        FreshnessState,
-        LifecycleState,
-        PacketLifecycleState,
-        PacketRecord,
-        PacketRole,
-        SensitivityClassification,
+        AdmissibilityState, ArtifactClass, ArtifactRecord, AuthorityLevel, CriticStatus,
+        EventRecord, EventType, FreshnessState, LifecycleState, PacketLifecycleState, PacketRecord,
+        PacketRole, SensitivityClassification,
     };
 
     use super::{
-        apply_artifact_invalidation,
-        apply_packet_constituent_change,
-        ArtifactInvalidationDecision,
+        apply_artifact_invalidation, apply_packet_constituent_change, ArtifactInvalidationDecision,
     };
 
     fn base_artifact() -> ArtifactRecord {
@@ -346,7 +328,10 @@ mod tests {
 
         assert!(outcome.overlapped);
         assert_eq!(outcome.decision, ArtifactInvalidationDecision::Invalidated);
-        assert_eq!(outcome.artifact.freshness_state, FreshnessState::Invalidated);
+        assert_eq!(
+            outcome.artifact.freshness_state,
+            FreshnessState::Invalidated
+        );
         assert_eq!(
             outcome.artifact.admissibility_state,
             AdmissibilityState::NotAdmissible
@@ -394,6 +379,9 @@ mod tests {
 
         assert!(!outcome.reevaluation_required);
         assert!(!outcome.remediation_required);
-        assert_eq!(outcome.packet.admissibility_state, AdmissibilityState::Admissible);
+        assert_eq!(
+            outcome.packet.admissibility_state,
+            AdmissibilityState::Admissible
+        );
     }
 }

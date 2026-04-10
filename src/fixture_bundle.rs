@@ -84,7 +84,9 @@ fn inventory_reports(dir: &Path, expected: &[&str], label_prefix: &str) -> Vec<F
     }
 
     for actual in actual_files {
-        let known = expected.iter().any(|expected_name| *expected_name == actual);
+        let known = expected
+            .iter()
+            .any(|expected_name| *expected_name == actual);
         reports.push(FixtureReport {
             label: format!("{}_unexpected_file_check", label_prefix),
             path: dir.join(&actual),

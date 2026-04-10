@@ -1,12 +1,6 @@
 use crate::{
-    AdmissibilityState,
-    AffectedObjectType,
-    ArtifactRecord,
-    CriticStatus,
-    FreshnessState,
-    LifecycleState,
-    PacketLifecycleState,
-    PacketRecord,
+    AdmissibilityState, AffectedObjectType, ArtifactRecord, CriticStatus, FreshnessState,
+    LifecycleState, PacketLifecycleState, PacketRecord,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -207,8 +201,7 @@ pub fn plan_packet_remediation(
                 packet.packet_id
             ),
             recommended_action:
-                "refresh the stale constituent artifact and recompute packet admissibility"
-                    .into(),
+                "refresh the stale constituent artifact and recompute packet admissibility".into(),
         });
     }
 
@@ -219,13 +212,9 @@ pub fn plan_packet_remediation(
             affected_object_ids: vec![packet.packet_id.clone()],
             trigger: RemediationTrigger::PacketReevaluationRequired,
             blocking: true,
-            summary: format!(
-                "packet {} is not currently admissible",
-                packet.packet_id
-            ),
+            summary: format!("packet {} is not currently admissible", packet.packet_id),
             recommended_action:
-                "inspect constituent posture and rerun packet evaluation before consumer use"
-                    .into(),
+                "inspect constituent posture and rerun packet evaluation before consumer use".into(),
         });
     }
 
@@ -243,23 +232,13 @@ pub fn remediation_required_for_packet(
 #[cfg(test)]
 mod tests {
     use crate::{
-        AdmissibilityState,
-        ArtifactClass,
-        ArtifactRecord,
-        AuthorityLevel,
-        CriticStatus,
-        FreshnessState,
-        LifecycleState,
-        PacketLifecycleState,
-        PacketRecord,
-        PacketRole,
+        AdmissibilityState, ArtifactClass, ArtifactRecord, AuthorityLevel, CriticStatus,
+        FreshnessState, LifecycleState, PacketLifecycleState, PacketRecord, PacketRole,
         SensitivityClassification,
     };
 
     use super::{
-        plan_artifact_remediation,
-        plan_packet_remediation,
-        remediation_required_for_packet,
+        plan_artifact_remediation, plan_packet_remediation, remediation_required_for_packet,
         RemediationTrigger,
     };
 
@@ -333,9 +312,12 @@ mod tests {
         packet.reevaluation_required = true;
         packet.admissibility_state = AdmissibilityState::NotAdmissible;
 
-        let plan =
-            plan_packet_remediation(&packet, &[FreshnessState::Fresh], &[LifecycleState::Approved])
-                .unwrap();
+        let plan = plan_packet_remediation(
+            &packet,
+            &[FreshnessState::Fresh],
+            &[LifecycleState::Approved],
+        )
+        .unwrap();
 
         assert_eq!(plan.trigger, RemediationTrigger::PacketReevaluationRequired);
         assert!(plan.blocking);

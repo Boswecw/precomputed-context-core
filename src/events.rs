@@ -55,7 +55,12 @@ impl EventRecord {
     fn coalescing_key(&self) -> String {
         let mut refs = self.source_refs.clone();
         refs.sort();
-        format!("{}::{}::{}", self.repo_id, self.correlation_id, refs.join("|"))
+        format!(
+            "{}::{}::{}",
+            self.repo_id,
+            self.correlation_id,
+            refs.join("|")
+        )
     }
 }
 
@@ -94,7 +99,11 @@ impl EventLedger {
     }
 
     pub fn mark_poison(&mut self, event_id: &str) {
-        if let Some(index) = self.pending.iter().position(|event| event.event_id == event_id) {
+        if let Some(index) = self
+            .pending
+            .iter()
+            .position(|event| event.event_id == event_id)
+        {
             let poisoned = self.pending.remove(index);
             self.poison_events.push(poisoned);
         }

@@ -85,5 +85,8 @@ pub fn run_proof_bundle(root: &Path) -> ProofBundleReport {
         },
     });
 
-    ProofBundleReport { schema_paths, steps }
+    ProofBundleReport {
+        schema_paths,
+        steps,
+    }
 }

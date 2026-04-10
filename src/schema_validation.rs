@@ -83,7 +83,8 @@ const FIXTURE_SCHEMA_MAPS: &[FixtureSchemaMap] = &[
     },
     FixtureSchemaMap {
         label: "repo_navigation_assist_packet_invalid_semantic_but_shape_valid",
-        fixture_rel_path: "fixtures/invalid/repo_navigation_assist_packet_missing_constituent_gate.json",
+        fixture_rel_path:
+            "fixtures/invalid/repo_navigation_assist_packet_missing_constituent_gate.json",
         schema_rel_path: "schemas/repo_navigation_assist_packet_contract.schema.json",
     },
     FixtureSchemaMap {

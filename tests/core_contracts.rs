@@ -1,0 +1,468 @@
+mod common;
+
+use std::path::Path;
+
+use common::{base_artifact, base_authority_record, base_packet};
+use precomputed_context_core::*;
+
+#[test]
+fn approved_fresh_passed_artifact_is_admissible() {
+    let artifact = base_artifact();
+    assert!(validate_artifact_state(&artifact).is_ok());
+    assert_eq!(
+        compute_default_artifact_admissibility(
+            artifact.lifecycle_state,
+            artifact.freshness_state,
+            artifact.critic_status
+        ),
+        AdmissibilityState::Admissible
+    );
+}
+
+#[test]
+fn approved_review_due_passed_artifact_warns() {
+    let mut artifact = base_artifact();
+    artifact.freshness_state = FreshnessState::ReviewDue;
+    artifact.admissibility_state = AdmissibilityState::AdmissibleWithWarning;
+
+    assert!(validate_artifact_state(&artifact).is_ok());
+    assert_eq!(
+        compute_default_artifact_admissibility(
+            artifact.lifecycle_state,
+            artifact.freshness_state,
+            artifact.critic_status
+        ),
+        AdmissibilityState::AdmissibleWithWarning
+    );
+}
+
+#[test]
+fn candidate_artifact_cannot_be_admissible() {
+    let mut artifact = base_artifact();
+    artifact.lifecycle_state = LifecycleState::Candidate;
+    artifact.freshness_state = FreshnessState::ReviewDue;
+    artifact.admissibility_state = AdmissibilityState::Admissible;
+    let err = validate_artifact_state(&artifact).unwrap_err();
+    assert!(err.contains("candidate"));
+}
+
+#[test]
+fn blocked_artifact_cannot_be_fresh() {
+    let mut artifact = base_artifact();
+    artifact.lifecycle_state = LifecycleState::Blocked;
+    artifact.freshness_state = FreshnessState::Fresh;
+    artifact.admissibility_state = AdmissibilityState::NotAdmissible;
+    let err = validate_artifact_state(&artifact).unwrap_err();
+    assert!(err.contains("blocked"));
+}
+
+#[test]
+fn stale_artifact_cannot_remain_admissible() {
+    let mut artifact = base_artifact();
+    artifact.freshness_state = FreshnessState::Stale;
+    artifact.admissibility_state = AdmissibilityState::Admissible;
+
+    assert!(validate_artifact_state(&artifact).is_err());
+}
+
+#[test]
+fn critic_failed_cannot_remain_approved() {
+    let mut artifact = base_artifact();
+    artifact.critic_status = CriticStatus::Failed;
+    artifact.admissibility_state = AdmissibilityState::NotAdmissible;
+    let err = validate_artifact_state(&artifact).unwrap_err();
+    assert!(err.contains("critic failed"));
+}
+
+#[test]
+fn invalidated_artifact_generates_remediation_plan() {
+    let mut artifact = base_artifact();
+    artifact.freshness_state = FreshnessState::Invalidated;
+    artifact.admissibility_state = AdmissibilityState::NotAdmissible;
+
+    let plan = plan_artifact_remediation(&artifact).unwrap();
+    assert_eq!(plan.trigger, RemediationTrigger::ArtifactInvalidated);
+    assert!(plan.blocking);
+}
+
+#[test]
+fn packet_with_invalidated_required_constituent_is_not_admissible() {
+    let packet = base_packet();
+
+    let result = compute_default_packet_admissibility(
+        packet.lifecycle_state,
+        packet.required_constituents_present,
+        packet.reevaluation_required,
+        &[FreshnessState::Invalidated],
+        &[LifecycleState::Approved],
+    );
+
+    assert_eq!(result, AdmissibilityState::NotAdmissible);
+}
+
+#[test]
+fn approved_packet_with_reevaluation_required_is_not_admissible() {
+    let mut packet = base_packet();
+    packet.reevaluation_required = true;
+
+    assert!(validate_packet_state(&packet).is_err());
+
+    let result = compute_default_packet_admissibility(
+        packet.lifecycle_state,
+        packet.required_constituents_present,
+        packet.reevaluation_required,
+        &[FreshnessState::Fresh],
+        &[LifecycleState::Approved],
+    );
+
+    assert_eq!(result, AdmissibilityState::NotAdmissible);
+}
+
+#[test]
+fn approved_packet_with_missing_required_constituents_is_not_admissible() {
+    let mut packet = base_packet();
+    packet.required_constituents_present = false;
+
+    assert!(validate_packet_state(&packet).is_err());
+
+    let result = compute_default_packet_admissibility(
+        packet.lifecycle_state,
+        packet.required_constituents_present,
+        packet.reevaluation_required,
+        &[FreshnessState::Fresh],
+        &[LifecycleState::Approved],
+    );
+
+    assert_eq!(result, AdmissibilityState::NotAdmissible);
+}
+
+#[test]
+fn packet_with_blocked_required_constituent_is_not_admissible() {
+    let packet = base_packet();
+
+    let result = compute_default_packet_admissibility(
+        packet.lifecycle_state,
+        packet.required_constituents_present,
+        packet.reevaluation_required,
+        &[FreshnessState::Fresh],
+        &[LifecycleState::Blocked],
+    );
+
+    assert_eq!(result, AdmissibilityState::NotAdmissible);
+}
+
+#[test]
+fn invalidated_constituent_generates_packet_remediation_plan() {
+    let packet = base_packet();
+
+    let plan = plan_packet_remediation(
+        &packet,
+        &[FreshnessState::Invalidated],
+        &[LifecycleState::Approved],
+    )
+    .unwrap();
+
+    assert_eq!(plan.trigger, RemediationTrigger::ConstituentInvalidated);
+    assert!(plan.blocking);
+}
+
+#[test]
+fn artifact_lifecycle_transition_rules_match_v1_contract() {
+    assert!(can_transition_artifact_lifecycle(
+        LifecycleState::Candidate,
+        LifecycleState::Approved
+    ));
+    assert!(can_transition_artifact_lifecycle(
+        LifecycleState::Candidate,
+        LifecycleState::Blocked
+    ));
+    assert!(can_transition_artifact_lifecycle(
+        LifecycleState::Approved,
+        LifecycleState::Superseded
+    ));
+    assert!(can_transition_artifact_lifecycle(
+        LifecycleState::Approved,
+        LifecycleState::Blocked
+    ));
+    assert!(can_transition_artifact_lifecycle(
+        LifecycleState::Blocked,
+        LifecycleState::Candidate
+    ));
+
+    assert!(!can_transition_artifact_lifecycle(
+        LifecycleState::Superseded,
+        LifecycleState::Approved
+    ));
+    assert!(!can_transition_artifact_lifecycle(
+        LifecycleState::Retired,
+        LifecycleState::Approved
+    ));
+    assert!(!can_transition_artifact_lifecycle(
+        LifecycleState::Blocked,
+        LifecycleState::Approved
+    ));
+}
+
+#[test]
+fn freshness_transition_rules_match_v1_contract() {
+    assert!(can_transition_freshness(
+        FreshnessState::Fresh,
+        FreshnessState::ReviewDue
+    ));
+    assert!(can_transition_freshness(
+        FreshnessState::ReviewDue,
+        FreshnessState::Stale
+    ));
+    assert!(can_transition_freshness(
+        FreshnessState::Fresh,
+        FreshnessState::Invalidated
+    ));
+    assert!(can_transition_freshness(
+        FreshnessState::ReviewDue,
+        FreshnessState::Invalidated
+    ));
+    assert!(can_transition_freshness(
+        FreshnessState::Stale,
+        FreshnessState::Invalidated
+    ));
+}
+
+#[test]
+fn source_change_invalidation_flow_downgrades_packet_admission() {
+    let mut ledger = EventLedger::default();
+
+    let event1 = EventRecord {
+        event_id: "evt-101".into(),
+        event_type: EventType::SourceChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:00-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["src-tauri/src/lib.rs".into()],
+        causation_id: None,
+        correlation_id: "corr-101".into(),
+        idempotency_key: "idem-101".into(),
+        event_payload: "initial source change".into(),
+    };
+
+    let event2 = EventRecord {
+        event_id: "evt-102".into(),
+        event_type: EventType::SourceChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:05-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["src-tauri/src/lib.rs".into()],
+        causation_id: Some("evt-101".into()),
+        correlation_id: "corr-101".into(),
+        idempotency_key: "idem-102".into(),
+        event_payload: "follow-up source change".into(),
+    };
+
+    assert_eq!(
+        ledger.accept(event1).unwrap(),
+        EventProcessingDecision::Accepted
+    );
+    assert_eq!(
+        ledger.accept(event2).unwrap(),
+        EventProcessingDecision::Accepted
+    );
+
+    let batches = ledger.coalesce_pending();
+    assert_eq!(batches.len(), 1);
+    assert_eq!(batches[0].events.len(), 2);
+
+    let mut artifact = base_artifact();
+    artifact.freshness_state = FreshnessState::Invalidated;
+    artifact.admissibility_state = AdmissibilityState::NotAdmissible;
+    assert!(validate_artifact_state(&artifact).is_ok());
+
+    let packet_result = compute_default_packet_admissibility(
+        PacketLifecycleState::Approved,
+        true,
+        true,
+        &[artifact.freshness_state],
+        &[artifact.lifecycle_state],
+    );
+
+    assert_eq!(packet_result, AdmissibilityState::NotAdmissible);
+
+    let remediation_plan = plan_packet_remediation(
+        &base_packet(),
+        &[artifact.freshness_state],
+        &[artifact.lifecycle_state],
+    )
+    .unwrap();
+
+    assert!(remediation_plan.blocking);
+}
+
+#[test]
+fn authority_record_fails_closed_when_missing_precedence() {
+    let mut record = base_authority_record();
+    record.authority_order.clear();
+    let err = record.validate().unwrap_err();
+    assert!(err.contains("authority_order"));
+}
+
+#[test]
+fn authority_record_rejects_disallowed_source_use() {
+    let record = base_authority_record();
+    let err = record
+        .validate_derivation_request(
+            ArtifactClass::RepoNavigationMap,
+            &[SourceFamily::CodeRuntime, SourceFamily::GeneratedOutput],
+        )
+        .unwrap_err();
+    assert!(err.contains("disallowed"));
+}
+
+#[test]
+fn event_ledger_dedupes_by_idempotency_key() {
+    let mut ledger = EventLedger::default();
+    let event = EventRecord {
+        event_id: "evt-001".into(),
+        event_type: EventType::SourceChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:00-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["src-tauri/src/lib.rs".into()],
+        causation_id: None,
+        correlation_id: "corr-001".into(),
+        idempotency_key: "idem-001".into(),
+        event_payload: "source hash changed".into(),
+    };
+
+    let first = ledger.accept(event.clone()).unwrap();
+    let second = ledger.accept(event).unwrap();
+    assert_eq!(first, EventProcessingDecision::Accepted);
+    assert_eq!(second, EventProcessingDecision::DuplicateIgnored);
+}
+
+#[test]
+fn event_batch_coalesces_same_repo_same_source_ref() {
+    let mut ledger = EventLedger::default();
+
+    let event1 = EventRecord {
+        event_id: "evt-001".into(),
+        event_type: EventType::SourceChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:00-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec![],
+        related_packet_ids: vec![],
+        source_refs: vec!["src-tauri/src/lib.rs".into()],
+        causation_id: None,
+        correlation_id: "corr-001".into(),
+        idempotency_key: "idem-001".into(),
+        event_payload: "first".into(),
+    };
+
+    let event2 = EventRecord {
+        event_id: "evt-002".into(),
+        event_type: EventType::SourceChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:05-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec![],
+        related_packet_ids: vec![],
+        source_refs: vec!["src-tauri/src/lib.rs".into()],
+        causation_id: Some("evt-001".into()),
+        correlation_id: "corr-001".into(),
+        idempotency_key: "idem-002".into(),
+        event_payload: "second".into(),
+    };
+
+    ledger.accept(event1).unwrap();
+    ledger.accept(event2).unwrap();
+
+    let batch = ledger.coalesce_pending();
+    assert_eq!(batch.len(), 1);
+    assert_eq!(batch[0].events.len(), 2);
+}
+
+#[test]
+fn override_does_not_mutate_underlying_artifact_truth() {
+    let artifact = base_artifact();
+    let override_record = OverrideRecord {
+        schema_version: "1.0".into(),
+        override_id: "ovr-001".into(),
+        actor_identity: "charlie".into(),
+        reason: "Temporary controlled use during review.".into(),
+        scope: "packet_admission_only".into(),
+        start_time: "2026-04-09T00:00:00-04:00".into(),
+        expiry_time: "2026-04-10T00:00:00-04:00".into(),
+        affected_object_type: AffectedObjectType::Artifact,
+        affected_object_ids: vec!["art-001".into()],
+        review_required_by: "2026-04-10T00:00:00-04:00".into(),
+        created_at: "2026-04-09T00:00:00-04:00".into(),
+    };
+
+    assert!(override_record.validate().is_ok());
+    assert_eq!(artifact.freshness_state, FreshnessState::Fresh);
+    assert_eq!(artifact.lifecycle_state, LifecycleState::Approved);
+}
+
+#[test]
+fn fixture_bundle_passes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let reports = fixture_bundle::run_fixture_bundle(root);
+
+    let failures: Vec<String> = reports
+        .iter()
+        .filter(|report| !report.passed)
+        .map(|report| format!("{} :: {}", report.label, report.detail))
+        .collect();
+
+    assert!(
+        failures.is_empty(),
+        "fixture bundle failures: {:?}",
+        failures
+    );
+}
+
+#[test]
+fn schema_catalog_contains_expected_contract_surfaces() {
+    let names: Vec<&str> = schema_bundle::schema_catalog()
+        .iter()
+        .map(|(name, _)| *name)
+        .collect();
+
+    assert_eq!(names.len(), 8);
+    assert!(names.contains(&"authority_resolution_record.schema.json"));
+    assert!(names.contains(&"repo_navigation_map_contract.schema.json"));
+    assert!(names.contains(&"key_file_packet_contract.schema.json"));
+    assert!(names.contains(&"validation_command_packet_contract.schema.json"));
+    assert!(names.contains(&"repo_navigation_assist_packet_contract.schema.json"));
+    assert!(names.contains(&"event_record.schema.json"));
+    assert!(names.contains(&"remediation_item.schema.json"));
+    assert!(names.contains(&"override_record.schema.json"));
+}
+
+#[test]
+fn schema_validation_bundle_passes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    schema_bundle::export_schemas(root).unwrap();
+
+    let reports = schema_validation::run_schema_validation(root);
+    let failures: Vec<String> = reports
+        .iter()
+        .filter(|report| !report.passed)
+        .map(|report| format!("{} :: {}", report.label, report.detail))
+        .collect();
+
+    assert!(
+        failures.is_empty(),
+        "schema validation failures: {:?}",
+        failures
+    );
+}

@@ -62,7 +62,10 @@ impl AuthorityResolutionRecord {
     ) -> Result<(), String> {
         self.validate()?;
 
-        if !self.approved_derivation_scope.contains(&requested_artifact_class) {
+        if !self
+            .approved_derivation_scope
+            .contains(&requested_artifact_class)
+        {
             return Err("requested artifact class is outside approved_derivation_scope".into());
         }
 
@@ -75,7 +78,9 @@ impl AuthorityResolutionRecord {
                 return Err("derivation request includes a disallowed source family".into());
             }
             if !self.approved_source_families.contains(source) {
-                return Err("derivation request includes a source family that is not approved".into());
+                return Err(
+                    "derivation request includes a source family that is not approved".into(),
+                );
             }
         }
 
