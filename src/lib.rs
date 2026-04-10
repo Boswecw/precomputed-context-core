@@ -5,6 +5,7 @@ pub mod events;
 pub mod fixture_bundle;
 pub mod models;
 pub mod schema_bundle;
+pub mod schema_validation;
 pub mod state_machine;
 
 pub use authority::AuthorityResolutionRecord;
@@ -313,5 +314,20 @@ mod tests {
         assert!(names.contains(&"event_record.schema.json"));
         assert!(names.contains(&"remediation_item.schema.json"));
         assert!(names.contains(&"override_record.schema.json"));
+    }
+
+    #[test]
+    fn schema_validation_bundle_passes() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        schema_bundle::export_schemas(root).unwrap();
+
+        let reports = schema_validation::run_schema_validation(root);
+        let failures: Vec<String> = reports
+            .iter()
+            .filter(|report| !report.passed)
+            .map(|report| format!("{} :: {}", report.label, report.detail))
+            .collect();
+
+        assert!(failures.is_empty(), "schema validation failures: {:?}", failures);
     }
 }
