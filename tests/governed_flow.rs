@@ -4,9 +4,19 @@ mod governed_flow_support;
 use std::path::Path;
 
 use common::{base_artifact, base_packet};
-use governed_flow_support::{
-    assert_governed_flow_report, authority_record_changed_event, source_deleted_event,
+use governed_flow_support::assert_governed_flow_report;
+
+#[cfg(feature = "test-support")]
+use precomputed_context_core::fixture_support::{
+    authority_record_changed_event, source_deleted_event,
 };
+
+#[cfg(not(feature = "test-support"))]
+use precomputed_context_core::proof::{
+    authority_record_changed_event_for_test as authority_record_changed_event,
+    source_deleted_event,
+};
+
 use precomputed_context_core::{
     apply_artifact_invalidation, apply_packet_constituent_change, run_governed_flow_proof,
     validate_artifact_state, validate_packet_state, AdmissibilityState,
