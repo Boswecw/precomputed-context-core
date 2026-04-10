@@ -1,0 +1,28 @@
+{
+  "base": {
+    "schema_version": "1.0",
+    "packet_id": "pkt-bad-001",
+    "packet_role": "repo_navigation_assist",
+    "repo_id": "forge-command",
+    "included_artifact_ids": [
+      "art-nav-001"
+    ],
+    "included_artifact_hashes": [
+      "hash-art-nav-001"
+    ],
+    "packet_constraints": [
+      "bounded"
+    ],
+    "packet_budget_band": "small",
+    "lane_compatibility": [
+      "neuroforge"
+    ],
+    "lifecycle_state": "approved",
+    "admissibility_state": "admissible",
+    "created_at": "2026-04-09T00:00:00-04:00",
+    "last_evaluated_at": "2026-04-09T00:00:00-04:00",
+    "required_constituents_present": false,
+    "reevaluation_required": false,
+    "sensitivity_classification": "internal_general"
+  }
+}

@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::enums::{ArtifactClass, RepoArchetype, SourceFamily};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AuthorityResolutionRecord {
     pub schema_version: String,
     pub repo_id: String,

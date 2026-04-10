@@ -1,10 +1,12 @@
+use serde::{Deserialize, Serialize};
+
 use crate::enums::{
     AdmissibilityState, AffectedObjectType, ArtifactClass, AuthorityLevel, BlockingStatus,
     CriticStatus, FreshnessState, LifecycleState, PacketLifecycleState, PacketRole,
     RemediationStatus, SensitivityClassification, Severity,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ArtifactRecord {
     pub schema_version: String,
     pub artifact_id: String,
@@ -29,7 +31,7 @@ pub struct ArtifactRecord {
     pub sensitivity_classification: SensitivityClassification,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PacketRecord {
     pub schema_version: String,
     pub packet_id: String,
@@ -49,7 +51,7 @@ pub struct PacketRecord {
     pub sensitivity_classification: SensitivityClassification,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RemediationItem {
     pub schema_version: String,
     pub remediation_id: String,
@@ -64,7 +66,34 @@ pub struct RemediationItem {
     pub status: RemediationStatus,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl RemediationItem {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.schema_version.trim().is_empty() {
+            return Err("schema_version is required".into());
+        }
+        if self.remediation_id.trim().is_empty() {
+            return Err("remediation_id is required".into());
+        }
+        if self.repo_id.trim().is_empty() {
+            return Err("repo_id is required".into());
+        }
+        if self.affected_object_ids.is_empty() {
+            return Err("affected_object_ids must not be empty".into());
+        }
+        if self.issue_type.trim().is_empty() {
+            return Err("issue_type is required".into());
+        }
+        if self.recommended_action.trim().is_empty() {
+            return Err("recommended_action is required".into());
+        }
+        if self.created_at.trim().is_empty() {
+            return Err("created_at is required".into());
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OverrideRecord {
     pub schema_version: String,
     pub override_id: String,

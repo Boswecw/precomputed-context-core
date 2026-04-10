@@ -1,10 +1,16 @@
 pub mod authority;
+pub mod contracts;
 pub mod enums;
 pub mod events;
+pub mod fixture_bundle;
 pub mod models;
 pub mod state_machine;
 
 pub use authority::AuthorityResolutionRecord;
+pub use contracts::{
+    KeyFilePacketContract, RepoNavigationAssistPacketContract, RepoNavigationMapContract,
+    ValidationCommandPacketContract,
+};
 pub use enums::*;
 pub use events::{EventBatch, EventLedger, EventProcessingDecision, EventRecord};
 pub use models::{ArtifactRecord, OverrideRecord, PacketRecord, RemediationItem};
@@ -19,6 +25,8 @@ pub use state_machine::{
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use crate::*;
 
     fn base_authority_record() -> AuthorityResolutionRecord {
@@ -41,7 +49,10 @@ mod tests {
                 SourceFamily::RepoTruthDoc,
                 SourceFamily::ProtocolDoc,
             ],
-            disallowed_source_families: vec![SourceFamily::GeneratedOutput, SourceFamily::AdvisoryNote],
+            disallowed_source_families: vec![
+                SourceFamily::GeneratedOutput,
+                SourceFamily::AdvisoryNote,
+            ],
             ambiguity_rules: vec![
                 "code_vs_repo_truth_doc_conflict_blocks".into(),
                 "protocol_vs_runtime_conflict_requires_review".into(),
@@ -103,6 +114,7 @@ mod tests {
     fn candidate_artifact_cannot_be_admissible() {
         let mut artifact = base_artifact();
         artifact.lifecycle_state = LifecycleState::Candidate;
+        artifact.freshness_state = FreshnessState::ReviewDue;
         artifact.admissibility_state = AdmissibilityState::Admissible;
         let err = validate_artifact_state(&artifact).unwrap_err();
         assert!(err.contains("candidate"));
@@ -113,6 +125,7 @@ mod tests {
         let mut artifact = base_artifact();
         artifact.lifecycle_state = LifecycleState::Blocked;
         artifact.freshness_state = FreshnessState::Fresh;
+        artifact.admissibility_state = AdmissibilityState::NotAdmissible;
         let err = validate_artifact_state(&artifact).unwrap_err();
         assert!(err.contains("blocked"));
     }
@@ -121,6 +134,7 @@ mod tests {
     fn critic_failed_cannot_remain_approved() {
         let mut artifact = base_artifact();
         artifact.critic_status = CriticStatus::Failed;
+        artifact.admissibility_state = AdmissibilityState::NotAdmissible;
         let err = validate_artifact_state(&artifact).unwrap_err();
         assert!(err.contains("critic failed"));
     }
@@ -266,5 +280,19 @@ mod tests {
         assert!(override_record.validate().is_ok());
         assert_eq!(artifact.freshness_state, FreshnessState::Fresh);
         assert_eq!(artifact.lifecycle_state, LifecycleState::Approved);
+    }
+
+    #[test]
+    fn fixture_bundle_passes() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let reports = fixture_bundle::run_fixture_bundle(root);
+
+        let failures: Vec<String> = reports
+            .iter()
+            .filter(|report| !report.passed)
+            .map(|report| format!("{} :: {}", report.label, report.detail))
+            .collect();
+
+        assert!(failures.is_empty(), "fixture bundle failures: {:?}", failures);
     }
 }

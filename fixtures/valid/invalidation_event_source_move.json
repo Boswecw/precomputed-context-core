@@ -1,0 +1,22 @@
+{
+  "event_id": "evt-source-move-001",
+  "event_type": "source_moved",
+  "schema_version": "1.0",
+  "emitted_at": "2026-04-09T00:10:00-04:00",
+  "emitter_service": "repo_watcher",
+  "repo_id": "forge-command",
+  "related_artifact_ids": [
+    "art-nav-001",
+    "art-key-001"
+  ],
+  "related_packet_ids": [
+    "pkt-nav-001"
+  ],
+  "source_refs": [
+    "src-tauri/src/registry/service.rs"
+  ],
+  "causation_id": null,
+  "correlation_id": "corr-source-move-001",
+  "idempotency_key": "idem-source-move-001",
+  "event_payload": "registry service moved and downstream reevaluation required"
+}

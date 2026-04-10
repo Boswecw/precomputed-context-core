@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "override_id": "ovr-001",
+  "actor_identity": "charlie",
+  "reason": "Temporary controlled packet use during review_due posture.",
+  "scope": "packet_admission_only",
+  "start_time": "2026-04-09T00:20:00-04:00",
+  "expiry_time": "2026-04-10T00:20:00-04:00",
+  "affected_object_type": "packet",
+  "affected_object_ids": [
+    "pkt-nav-001"
+  ],
+  "review_required_by": "2026-04-10T00:20:00-04:00",
+  "created_at": "2026-04-09T00:20:00-04:00"
+}

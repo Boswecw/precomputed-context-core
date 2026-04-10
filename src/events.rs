@@ -1,8 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
+use serde::{Deserialize, Serialize};
+
 use crate::enums::EventType;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EventRecord {
     pub event_id: String,
     pub event_type: EventType,
@@ -83,7 +85,8 @@ impl EventLedger {
             return Ok(EventProcessingDecision::DuplicateIgnored);
         }
 
-        self.seen_idempotency_keys.insert(event.idempotency_key.clone());
+        self.seen_idempotency_keys
+            .insert(event.idempotency_key.clone());
         self.pending.push(event);
         Ok(EventProcessingDecision::Accepted)
     }

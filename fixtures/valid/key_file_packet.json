@@ -1,0 +1,45 @@
+{
+  "base": {
+    "schema_version": "1.0",
+    "artifact_id": "art-key-001",
+    "artifact_class": "key_file_packet",
+    "repo_id": "forge-command",
+    "title": "ForgeCommand registry service key file",
+    "operational_purpose": "Identify a bounded key file surface",
+    "summary_block": "Registry service is a high-value control surface for repo governance behavior.",
+    "source_refs": [
+      "src-tauri/src/registry/service.rs"
+    ],
+    "source_ref_hashes": [
+      "hash-registry-service"
+    ],
+    "authority_level": "strong_derived",
+    "lifecycle_state": "approved",
+    "freshness_state": "fresh",
+    "critic_status": "passed",
+    "admissibility_state": "admissible",
+    "related_artifact_refs": [],
+    "supersedes_artifact_id": null,
+    "protocol_refs": [
+      "BDS_BACKEND_ENGINEERING_PROTOCOL"
+    ],
+    "created_at": "2026-04-09T00:00:00-04:00",
+    "last_validated_at": "2026-04-09T00:00:00-04:00",
+    "producer_identity": "proof-slice-core",
+    "sensitivity_classification": "internal_general"
+  },
+  "file_path": "src-tauri/src/registry/service.rs",
+  "why_it_matters": "This file influences remediation and repo-governance behavior.",
+  "dependent_surfaces": [
+    "registry workflow",
+    "repo remediation flow"
+  ],
+  "edit_cautions": [
+    "Preserve fail-closed state handling.",
+    "Do not bypass validation hooks."
+  ],
+  "read_before_edit_refs": [
+    "doc/fcSYSTEM.md",
+    "src-tauri/src/registry/enums.rs"
+  ]
+}

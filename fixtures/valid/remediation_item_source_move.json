@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "remediation_id": "rem-001",
+  "repo_id": "forge-command",
+  "affected_object_type": "artifact",
+  "affected_object_ids": [
+    "art-key-001"
+  ],
+  "issue_type": "source_move_requires_relink",
+  "severity": "high",
+  "blocking_status": "blocking",
+  "recommended_action": "Relink source refs and regenerate affected artifact.",
+  "created_at": "2026-04-09T00:12:00-04:00",
+  "status": "open"
+}

@@ -1,4 +1,7 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RepoArchetype {
     ServiceApiRepo,
     DesktopAppRepo,
@@ -6,7 +9,8 @@ pub enum RepoArchetype {
     SharedContractLibraryRepo,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SourceFamily {
     CodeRuntime,
     ContractSchema,
@@ -18,19 +22,22 @@ pub enum SourceFamily {
     AdvisoryNote,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ArtifactClass {
     RepoNavigationMap,
     KeyFilePacket,
     ValidationCommandPacket,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PacketRole {
     RepoNavigationAssist,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum AuthorityLevel {
     Canonical,
     StrongDerived,
@@ -38,7 +45,8 @@ pub enum AuthorityLevel {
     Provisional,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum LifecycleState {
     Candidate,
     Approved,
@@ -47,7 +55,8 @@ pub enum LifecycleState {
     Retired,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PacketLifecycleState {
     Candidate,
     Approved,
@@ -55,7 +64,8 @@ pub enum PacketLifecycleState {
     Retired,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum FreshnessState {
     Fresh,
     ReviewDue,
@@ -63,7 +73,8 @@ pub enum FreshnessState {
     Invalidated,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum CriticStatus {
     NotReviewed,
     Passed,
@@ -72,7 +83,8 @@ pub enum CriticStatus {
     RemediationRequired,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum AdmissibilityState {
     Admissible,
     AdmissibleWithWarning,
@@ -80,7 +92,8 @@ pub enum AdmissibilityState {
     NotAdmissible,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RemediationStatus {
     None,
     Open,
@@ -90,14 +103,16 @@ pub enum RemediationStatus {
     ClosedWithoutRepair,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SensitivityClassification {
     InternalGeneral,
     InternalSensitive,
     RestrictedRuntime,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Severity {
     Low,
     Medium,
@@ -105,14 +120,16 @@ pub enum Severity {
     Critical,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum BlockingStatus {
     NonBlocking,
     WarningOnly,
     Blocking,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum AffectedObjectType {
     Artifact,
     Packet,
@@ -120,7 +137,8 @@ pub enum AffectedObjectType {
     SourceRef,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum EventType {
     SourceChanged,
     SourceMoved,

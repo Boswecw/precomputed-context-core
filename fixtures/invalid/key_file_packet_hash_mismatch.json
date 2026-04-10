@@ -1,0 +1,41 @@
+{
+  "base": {
+    "schema_version": "1.0",
+    "artifact_id": "art-key-bad-001",
+    "artifact_class": "key_file_packet",
+    "repo_id": "forge-command",
+    "title": "Bad key file packet",
+    "operational_purpose": "Invalid example",
+    "summary_block": "This should fail because source refs and hashes are misaligned.",
+    "source_refs": [
+      "src-tauri/src/registry/service.rs",
+      "doc/fcSYSTEM.md"
+    ],
+    "source_ref_hashes": [
+      "hash-registry-service"
+    ],
+    "authority_level": "strong_derived",
+    "lifecycle_state": "approved",
+    "freshness_state": "fresh",
+    "critic_status": "passed",
+    "admissibility_state": "admissible",
+    "related_artifact_refs": [],
+    "supersedes_artifact_id": null,
+    "protocol_refs": [],
+    "created_at": "2026-04-09T00:00:00-04:00",
+    "last_validated_at": "2026-04-09T00:00:00-04:00",
+    "producer_identity": "proof-slice-core",
+    "sensitivity_classification": "internal_general"
+  },
+  "file_path": "src-tauri/src/registry/service.rs",
+  "why_it_matters": "Important file.",
+  "dependent_surfaces": [
+    "registry workflow"
+  ],
+  "edit_cautions": [
+    "Do not bypass validation."
+  ],
+  "read_before_edit_refs": [
+    "doc/fcSYSTEM.md"
+  ]
+}
