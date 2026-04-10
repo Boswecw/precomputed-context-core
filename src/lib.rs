@@ -5,6 +5,7 @@ pub mod events;
 pub mod fixture_bundle;
 pub mod models;
 pub mod proof_bundle;
+pub mod remediation_flow;
 pub mod schema_bundle;
 pub mod schema_validation;
 pub mod state_machine;
@@ -19,6 +20,13 @@ pub use contracts::{
 pub use enums::*;
 pub use events::{EventBatch, EventLedger, EventProcessingDecision, EventRecord};
 pub use models::{ArtifactRecord, OverrideRecord, PacketRecord, RemediationItem};
+pub use remediation_flow::{
+    plan_artifact_remediation,
+    plan_packet_remediation,
+    remediation_required_for_packet,
+    RemediationPlan,
+    RemediationTrigger,
+};
 pub use state_machine::{
     can_transition_artifact_lifecycle,
     can_transition_freshness,
@@ -101,6 +109,27 @@ mod tests {
         }
     }
 
+    fn base_packet() -> PacketRecord {
+        PacketRecord {
+            schema_version: "1.0".into(),
+            packet_id: "pkt-001".into(),
+            packet_role: PacketRole::RepoNavigationAssist,
+            repo_id: "forge-command".into(),
+            included_artifact_ids: vec!["art-001".into()],
+            included_artifact_hashes: vec!["hash-art-001".into()],
+            packet_constraints: vec!["bounded".into()],
+            packet_budget_band: "small".into(),
+            lane_compatibility: vec!["neuroforge".into(), "neuronforge".into()],
+            lifecycle_state: PacketLifecycleState::Approved,
+            admissibility_state: AdmissibilityState::Admissible,
+            created_at: "2026-04-09T00:00:00-04:00".into(),
+            last_evaluated_at: "2026-04-09T00:00:00-04:00".into(),
+            required_constituents_present: true,
+            reevaluation_required: false,
+            sensitivity_classification: SensitivityClassification::InternalGeneral,
+        }
+    }
+
     #[test]
     fn approved_fresh_passed_artifact_is_admissible() {
         let artifact = base_artifact();
@@ -112,6 +141,23 @@ mod tests {
                 artifact.critic_status
             ),
             AdmissibilityState::Admissible
+        );
+    }
+
+    #[test]
+    fn approved_review_due_passed_artifact_warns() {
+        let mut artifact = base_artifact();
+        artifact.freshness_state = FreshnessState::ReviewDue;
+        artifact.admissibility_state = AdmissibilityState::AdmissibleWithWarning;
+
+        assert!(validate_artifact_state(&artifact).is_ok());
+        assert_eq!(
+            compute_default_artifact_admissibility(
+                artifact.lifecycle_state,
+                artifact.freshness_state,
+                artifact.critic_status
+            ),
+            AdmissibilityState::AdmissibleWithWarning
         );
     }
 
@@ -136,6 +182,15 @@ mod tests {
     }
 
     #[test]
+    fn stale_artifact_cannot_remain_admissible() {
+        let mut artifact = base_artifact();
+        artifact.freshness_state = FreshnessState::Stale;
+        artifact.admissibility_state = AdmissibilityState::Admissible;
+
+        assert!(validate_artifact_state(&artifact).is_err());
+    }
+
+    #[test]
     fn critic_failed_cannot_remain_approved() {
         let mut artifact = base_artifact();
         artifact.critic_status = CriticStatus::Failed;
@@ -145,25 +200,19 @@ mod tests {
     }
 
     #[test]
+    fn invalidated_artifact_generates_remediation_plan() {
+        let mut artifact = base_artifact();
+        artifact.freshness_state = FreshnessState::Invalidated;
+        artifact.admissibility_state = AdmissibilityState::NotAdmissible;
+
+        let plan = plan_artifact_remediation(&artifact).unwrap();
+        assert_eq!(plan.trigger, RemediationTrigger::ArtifactInvalidated);
+        assert!(plan.blocking);
+    }
+
+    #[test]
     fn packet_with_invalidated_required_constituent_is_not_admissible() {
-        let packet = PacketRecord {
-            schema_version: "1.0".into(),
-            packet_id: "pkt-001".into(),
-            packet_role: PacketRole::RepoNavigationAssist,
-            repo_id: "forge-command".into(),
-            included_artifact_ids: vec!["art-001".into()],
-            included_artifact_hashes: vec!["hash-art-001".into()],
-            packet_constraints: vec!["bounded".into()],
-            packet_budget_band: "small".into(),
-            lane_compatibility: vec!["neuroforge".into(), "neuronforge".into()],
-            lifecycle_state: PacketLifecycleState::Approved,
-            admissibility_state: AdmissibilityState::Admissible,
-            created_at: "2026-04-09T00:00:00-04:00".into(),
-            last_evaluated_at: "2026-04-09T00:00:00-04:00".into(),
-            required_constituents_present: true,
-            reevaluation_required: false,
-            sensitivity_classification: SensitivityClassification::InternalGeneral,
-        };
+        let packet = base_packet();
 
         let result = compute_default_packet_admissibility(
             packet.lifecycle_state,
@@ -174,6 +223,207 @@ mod tests {
         );
 
         assert_eq!(result, AdmissibilityState::NotAdmissible);
+    }
+
+    #[test]
+    fn approved_packet_with_reevaluation_required_is_not_admissible() {
+        let mut packet = base_packet();
+        packet.reevaluation_required = true;
+
+        assert!(validate_packet_state(&packet).is_err());
+
+        let result = compute_default_packet_admissibility(
+            packet.lifecycle_state,
+            packet.required_constituents_present,
+            packet.reevaluation_required,
+            &[FreshnessState::Fresh],
+            &[LifecycleState::Approved],
+        );
+
+        assert_eq!(result, AdmissibilityState::NotAdmissible);
+    }
+
+    #[test]
+    fn approved_packet_with_missing_required_constituents_is_not_admissible() {
+        let mut packet = base_packet();
+        packet.required_constituents_present = false;
+
+        assert!(validate_packet_state(&packet).is_err());
+
+        let result = compute_default_packet_admissibility(
+            packet.lifecycle_state,
+            packet.required_constituents_present,
+            packet.reevaluation_required,
+            &[FreshnessState::Fresh],
+            &[LifecycleState::Approved],
+        );
+
+        assert_eq!(result, AdmissibilityState::NotAdmissible);
+    }
+
+    #[test]
+    fn packet_with_blocked_required_constituent_is_not_admissible() {
+        let packet = base_packet();
+
+        let result = compute_default_packet_admissibility(
+            packet.lifecycle_state,
+            packet.required_constituents_present,
+            packet.reevaluation_required,
+            &[FreshnessState::Fresh],
+            &[LifecycleState::Blocked],
+        );
+
+        assert_eq!(result, AdmissibilityState::NotAdmissible);
+    }
+
+    #[test]
+    fn invalidated_constituent_generates_packet_remediation_plan() {
+        let packet = base_packet();
+
+        let plan = plan_packet_remediation(
+            &packet,
+            &[FreshnessState::Invalidated],
+            &[LifecycleState::Approved],
+        )
+        .unwrap();
+
+        assert_eq!(plan.trigger, RemediationTrigger::ConstituentInvalidated);
+        assert!(plan.blocking);
+    }
+
+    #[test]
+    fn artifact_lifecycle_transition_rules_match_v1_contract() {
+        assert!(can_transition_artifact_lifecycle(
+            LifecycleState::Candidate,
+            LifecycleState::Approved
+        ));
+        assert!(can_transition_artifact_lifecycle(
+            LifecycleState::Candidate,
+            LifecycleState::Blocked
+        ));
+        assert!(can_transition_artifact_lifecycle(
+            LifecycleState::Approved,
+            LifecycleState::Superseded
+        ));
+        assert!(can_transition_artifact_lifecycle(
+            LifecycleState::Approved,
+            LifecycleState::Blocked
+        ));
+        assert!(can_transition_artifact_lifecycle(
+            LifecycleState::Blocked,
+            LifecycleState::Candidate
+        ));
+
+        assert!(!can_transition_artifact_lifecycle(
+            LifecycleState::Superseded,
+            LifecycleState::Approved
+        ));
+        assert!(!can_transition_artifact_lifecycle(
+            LifecycleState::Retired,
+            LifecycleState::Approved
+        ));
+        assert!(!can_transition_artifact_lifecycle(
+            LifecycleState::Blocked,
+            LifecycleState::Approved
+        ));
+    }
+
+    #[test]
+    fn freshness_transition_rules_match_v1_contract() {
+        assert!(can_transition_freshness(
+            FreshnessState::Fresh,
+            FreshnessState::ReviewDue
+        ));
+        assert!(can_transition_freshness(
+            FreshnessState::ReviewDue,
+            FreshnessState::Stale
+        ));
+        assert!(can_transition_freshness(
+            FreshnessState::Fresh,
+            FreshnessState::Invalidated
+        ));
+        assert!(can_transition_freshness(
+            FreshnessState::ReviewDue,
+            FreshnessState::Invalidated
+        ));
+        assert!(can_transition_freshness(
+            FreshnessState::Stale,
+            FreshnessState::Invalidated
+        ));
+    }
+
+    #[test]
+    fn source_change_invalidation_flow_downgrades_packet_admission() {
+        let mut ledger = EventLedger::default();
+
+        let event1 = EventRecord {
+            event_id: "evt-101".into(),
+            event_type: EventType::SourceChanged,
+            schema_version: "1.0".into(),
+            emitted_at: "2026-04-09T00:00:00-04:00".into(),
+            emitter_service: "repo-watcher".into(),
+            repo_id: "forge-command".into(),
+            related_artifact_ids: vec!["art-001".into()],
+            related_packet_ids: vec!["pkt-001".into()],
+            source_refs: vec!["src-tauri/src/lib.rs".into()],
+            causation_id: None,
+            correlation_id: "corr-101".into(),
+            idempotency_key: "idem-101".into(),
+            event_payload: "initial source change".into(),
+        };
+
+        let event2 = EventRecord {
+            event_id: "evt-102".into(),
+            event_type: EventType::SourceChanged,
+            schema_version: "1.0".into(),
+            emitted_at: "2026-04-09T00:00:05-04:00".into(),
+            emitter_service: "repo-watcher".into(),
+            repo_id: "forge-command".into(),
+            related_artifact_ids: vec!["art-001".into()],
+            related_packet_ids: vec!["pkt-001".into()],
+            source_refs: vec!["src-tauri/src/lib.rs".into()],
+            causation_id: Some("evt-101".into()),
+            correlation_id: "corr-101".into(),
+            idempotency_key: "idem-102".into(),
+            event_payload: "follow-up source change".into(),
+        };
+
+        assert_eq!(
+            ledger.accept(event1).unwrap(),
+            EventProcessingDecision::Accepted
+        );
+        assert_eq!(
+            ledger.accept(event2).unwrap(),
+            EventProcessingDecision::Accepted
+        );
+
+        let batches = ledger.coalesce_pending();
+        assert_eq!(batches.len(), 1);
+        assert_eq!(batches[0].events.len(), 2);
+
+        let mut artifact = base_artifact();
+        artifact.freshness_state = FreshnessState::Invalidated;
+        artifact.admissibility_state = AdmissibilityState::NotAdmissible;
+        assert!(validate_artifact_state(&artifact).is_ok());
+
+        let packet_result = compute_default_packet_admissibility(
+            PacketLifecycleState::Approved,
+            true,
+            true,
+            &[artifact.freshness_state],
+            &[artifact.lifecycle_state],
+        );
+
+        assert_eq!(packet_result, AdmissibilityState::NotAdmissible);
+
+        let remediation_plan = plan_packet_remediation(
+            &base_packet(),
+            &[artifact.freshness_state],
+            &[artifact.lifecycle_state],
+        )
+        .unwrap();
+
+        assert!(remediation_plan.blocking);
     }
 
     #[test]
