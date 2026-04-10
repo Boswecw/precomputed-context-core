@@ -3,6 +3,8 @@ pub mod contracts;
 pub mod enums;
 pub mod events;
 pub mod fixture_bundle;
+#[cfg(any(test, feature = "test-support"))]
+pub mod fixture_support;
 pub mod invalidation_engine;
 pub mod models;
 pub mod proof;

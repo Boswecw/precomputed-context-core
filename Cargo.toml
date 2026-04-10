@@ -7,6 +7,10 @@ edition = "2021"
 name = "precomputed_context_core"
 path = "src/lib.rs"
 
+[features]
+default = []
+test-support = []
+
 [dependencies]
 jsonschema = "0.18"
 schemars = { version = "0.8", features = ["derive"] }
