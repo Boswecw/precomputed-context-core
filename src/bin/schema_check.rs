@@ -7,21 +7,14 @@ fn main() {
 
     for report in &reports {
         let status = if report.passed { "PASS" } else { "FAIL" };
-        println!(
-            "[{}] {} :: fixture={} :: schema={} :: {}",
-            status,
-            report.label,
-            report.fixture_path.display(),
-            report.schema_path.display(),
-            report.detail
-        );
+        println!("[{}] {} :: {}", status, report.label, report.detail);
     }
 
     if bundle_passed(&reports) {
-        println!("schema validation bundle passed");
+        println!("schema validation passed");
         std::process::exit(0);
     }
 
-    println!("schema validation bundle failed");
+    println!("schema validation failed");
     std::process::exit(1);
 }

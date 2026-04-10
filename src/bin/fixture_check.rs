@@ -7,20 +7,14 @@ fn main() {
 
     for report in &reports {
         let status = if report.passed { "PASS" } else { "FAIL" };
-        println!(
-            "[{}] {} :: {} :: {}",
-            status,
-            report.label,
-            report.path.display(),
-            report.detail
-        );
+        println!("[{}] {} :: {}", status, report.label, report.detail);
     }
 
     if bundle_passed(&reports) {
-        println!("fixture bundle check passed");
+        println!("fixture validation passed");
         std::process::exit(0);
     }
 
-    println!("fixture bundle check failed");
+    println!("fixture validation failed");
     std::process::exit(1);
 }

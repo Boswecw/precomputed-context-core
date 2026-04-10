@@ -6,8 +6,9 @@ fn main() {
     match export_schemas(Path::new(".")) {
         Ok(paths) => {
             for path in paths {
-                println!("wrote {}", path.display());
+                println!("{}", path.display());
             }
+            std::process::exit(0);
         }
         Err(err) => {
             eprintln!("schema export failed: {}", err);
