@@ -132,3 +132,39 @@ pub fn authority_record_changed_event(
         event_payload: "authority record changed for governed proof path".into(),
     }
 }
+
+pub fn source_deleted_event() -> EventRecord {
+    EventRecord {
+        event_id: "evt-source-deleted-001".into(),
+        event_type: EventType::SourceDeleted,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:05-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["src-tauri/src".into()],
+        causation_id: None,
+        correlation_id: "corr-source-deleted-001".into(),
+        idempotency_key: "idem-source-deleted-001".into(),
+        event_payload: "source deleted for governed flow coverage".into(),
+    }
+}
+
+pub fn authority_record_changed_event_for_test() -> EventRecord {
+    EventRecord {
+        event_id: "evt-authority-record-changed-001".into(),
+        event_type: EventType::AuthorityRecordChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-10T01:00:05-04:00".into(),
+        emitter_service: "authority-governance".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["doc/system/fcSYSTEM.md".into()],
+        causation_id: None,
+        correlation_id: "corr-authority-record-changed-001".into(),
+        idempotency_key: "idem-authority-record-changed-001".into(),
+        event_payload: "authority precedence changed for governed flow coverage".into(),
+    }
+}
