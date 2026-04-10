@@ -1,5 +1,6 @@
 use precomputed_context_core::*;
 
+#[allow(dead_code)]
 pub fn base_authority_record() -> AuthorityResolutionRecord {
     AuthorityResolutionRecord {
         schema_version: "1.0".into(),
@@ -20,7 +21,10 @@ pub fn base_authority_record() -> AuthorityResolutionRecord {
             SourceFamily::RepoTruthDoc,
             SourceFamily::ProtocolDoc,
         ],
-        disallowed_source_families: vec![SourceFamily::GeneratedOutput, SourceFamily::AdvisoryNote],
+        disallowed_source_families: vec![
+            SourceFamily::GeneratedOutput,
+            SourceFamily::AdvisoryNote,
+        ],
         ambiguity_rules: vec![
             "code_vs_repo_truth_doc_conflict_blocks".into(),
             "protocol_vs_runtime_conflict_requires_review".into(),

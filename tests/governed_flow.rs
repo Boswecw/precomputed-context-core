@@ -1,6 +1,12 @@
+mod common;
+
 use std::path::Path;
 
-use precomputed_context_core::run_governed_flow_proof;
+use common::{base_artifact, base_packet};
+use precomputed_context_core::{
+    run_governed_flow_proof, validate_artifact_state, validate_packet_state,
+    AdmissibilityState, FreshnessState,
+};
 
 #[test]
 fn governed_flow_proof_passes_and_preserves_affected_boundaries() {
@@ -37,4 +43,31 @@ fn governed_flow_proof_passes_and_preserves_affected_boundaries() {
     assert_eq!(report.remediation_count, 2);
     assert_eq!(report.triggering_event_ids.len(), 2);
     assert!(report.passed());
+}
+
+#[test]
+fn governed_flow_mutation_detects_broken_artifact_and_packet_state() {
+    let report = run_governed_flow_proof(Path::new("."));
+    assert!(report.passed(), "baseline governed flow should be green before mutation");
+
+    let mut artifact = base_artifact();
+    artifact.freshness_state = FreshnessState::Invalidated;
+    artifact.admissibility_state = AdmissibilityState::Admissible;
+
+    let artifact_err = validate_artifact_state(&artifact).unwrap_err();
+    assert!(
+        artifact_err.contains("invalidated") || artifact_err.contains("not_admissible"),
+        "unexpected artifact validation error: {}",
+        artifact_err
+    );
+
+    let mut packet = base_packet();
+    packet.reevaluation_required = true;
+
+    let packet_err = validate_packet_state(&packet).unwrap_err();
+    assert!(
+        packet_err.contains("reevaluation") || packet_err.contains("not_admissible"),
+        "unexpected packet validation error: {}",
+        packet_err
+    );
 }
