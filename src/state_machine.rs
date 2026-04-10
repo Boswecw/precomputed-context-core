@@ -14,7 +14,9 @@ pub fn compute_default_artifact_admissibility(
         | LifecycleState::Superseded
         | LifecycleState::Retired => AdmissibilityState::NotAdmissible,
         LifecycleState::Approved => match critic_status {
-            CriticStatus::Failed | CriticStatus::RemediationRequired => AdmissibilityState::NotAdmissible,
+            CriticStatus::Failed | CriticStatus::RemediationRequired => {
+                AdmissibilityState::NotAdmissible
+            }
             CriticStatus::NotReviewed => AdmissibilityState::Restricted,
             CriticStatus::Passed => match freshness_state {
                 FreshnessState::Fresh => AdmissibilityState::Admissible,
@@ -103,14 +105,10 @@ pub fn validate_artifact_state(artifact: &ArtifactRecord) -> Result<(), String> 
         return Err("source_refs and source_ref_hashes must stay aligned".into());
     }
 
-    let expected = compute_default_artifact_admissibility(
-        artifact.lifecycle_state,
-        artifact.freshness_state,
-        artifact.critic_status,
-    );
-
-    if artifact.admissibility_state != expected {
-        return Err("artifact admissibility_state does not match canonical state algebra".into());
+    if artifact.lifecycle_state == LifecycleState::Candidate
+        && artifact.admissibility_state == AdmissibilityState::Admissible
+    {
+        return Err("candidate artifact cannot be admissible".into());
     }
 
     if artifact.lifecycle_state == LifecycleState::Candidate
@@ -125,10 +123,53 @@ pub fn validate_artifact_state(artifact: &ArtifactRecord) -> Result<(), String> 
         return Err("blocked artifact cannot remain fresh".into());
     }
 
-    if artifact.lifecycle_state == LifecycleState::Approved
-        && artifact.critic_status == CriticStatus::Failed
+    if artifact.lifecycle_state == LifecycleState::Blocked
+        && artifact.admissibility_state == AdmissibilityState::AdmissibleWithWarning
+    {
+        return Err("blocked artifact cannot be admissible_with_warning".into());
+    }
+
+    if artifact.lifecycle_state == LifecycleState::Superseded
+        && artifact.admissibility_state == AdmissibilityState::Restricted
+    {
+        return Err("superseded artifact cannot be restricted".into());
+    }
+
+    if artifact.lifecycle_state == LifecycleState::Retired
+        && artifact.admissibility_state != AdmissibilityState::NotAdmissible
+    {
+        return Err("retired artifact must be not_admissible".into());
+    }
+
+    if artifact.critic_status == CriticStatus::Failed
+        && artifact.lifecycle_state == LifecycleState::Approved
     {
         return Err("critic failed artifact cannot remain approved".into());
+    }
+
+    if artifact.critic_status == CriticStatus::Failed
+        && artifact.admissibility_state != AdmissibilityState::NotAdmissible
+    {
+        return Err("critic failed artifact cannot remain admissible".into());
+    }
+
+    if artifact.freshness_state == FreshnessState::Invalidated
+        && artifact.admissibility_state != AdmissibilityState::NotAdmissible
+    {
+        return Err("invalidated artifact cannot remain admissible".into());
+    }
+
+    let expected = compute_default_artifact_admissibility(
+        artifact.lifecycle_state,
+        artifact.freshness_state,
+        artifact.critic_status,
+    );
+
+    if artifact.admissibility_state != expected {
+        return Err(format!(
+            "artifact admissibility_state does not match canonical state algebra: expected {:?}, got {:?}",
+            expected, artifact.admissibility_state
+        ));
     }
 
     Ok(())
@@ -158,18 +199,19 @@ pub fn validate_packet_state(packet: &PacketRecord) -> Result<(), String> {
     }
 
     if packet.lifecycle_state == PacketLifecycleState::Approved
-        && (!packet.required_constituents_present || packet.reevaluation_required)
+        && !packet.required_constituents_present
     {
-        return Err("approved packet cannot exist with missing constituents or reevaluation required".into());
+        return Err("approved packet cannot exist with missing required constituents".into());
+    }
+
+    if packet.lifecycle_state == PacketLifecycleState::Approved && packet.reevaluation_required {
+        return Err("approved packet cannot exist while reevaluation is required".into());
     }
 
     Ok(())
 }
 
-pub fn can_transition_artifact_lifecycle(
-    from: LifecycleState,
-    to: LifecycleState,
-) -> bool {
+pub fn can_transition_artifact_lifecycle(from: LifecycleState, to: LifecycleState) -> bool {
     matches!(
         (from, to),
         (LifecycleState::Candidate, LifecycleState::Approved)
