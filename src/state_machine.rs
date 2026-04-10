@@ -105,6 +105,7 @@ pub fn validate_artifact_state(artifact: &ArtifactRecord) -> Result<(), String> 
         return Err("source_refs and source_ref_hashes must stay aligned".into());
     }
 
+    // Specific illegal combinations first so tests and operator diagnostics stay precise.
     if artifact.lifecycle_state == LifecycleState::Candidate
         && artifact.admissibility_state == AdmissibilityState::Admissible
     {
