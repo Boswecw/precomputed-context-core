@@ -11,6 +11,7 @@ Core Rust crate for the BDS Precomputed Context Program proof slice.
 - fixture bundle validation
 - JSON schema export for first-wave governed contracts
 - schema-level fixture validation against exported JSON schemas
+- unified proof entrypoint for first-wave contract proof
 - override non-mutation discipline
 
 ## Why this crate exists
@@ -36,14 +37,11 @@ This crate is the governed proof-slice core for the precomputed-context program.
 - exported schemas validate fixture shape before semantic checks
 - event dedupe works by idempotency key
 - event batches coalesce by repo plus correlated source scope
+- the repo has one proof command for the first-wave contract substrate
 - overrides do not mutate underlying governed truth
 
 ## Check
 
 Run: cargo test
 
-Run: cargo run --bin export_schemas
-
-Run: cargo run --bin schema_check
-
-Run: cargo run --bin fixture_check
+Run: cargo run --bin proof_check

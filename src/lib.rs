@@ -4,13 +4,16 @@ pub mod enums;
 pub mod events;
 pub mod fixture_bundle;
 pub mod models;
+pub mod proof_bundle;
 pub mod schema_bundle;
 pub mod schema_validation;
 pub mod state_machine;
 
 pub use authority::AuthorityResolutionRecord;
 pub use contracts::{
-    KeyFilePacketContract, RepoNavigationAssistPacketContract, RepoNavigationMapContract,
+    KeyFilePacketContract,
+    RepoNavigationAssistPacketContract,
+    RepoNavigationMapContract,
     ValidationCommandPacketContract,
 };
 pub use enums::*;
