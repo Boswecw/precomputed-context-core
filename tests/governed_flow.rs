@@ -4,8 +4,9 @@ use std::path::Path;
 
 use common::{base_artifact, base_packet};
 use precomputed_context_core::{
-    run_governed_flow_proof, validate_artifact_state, validate_packet_state,
-    AdmissibilityState, FreshnessState,
+    apply_artifact_invalidation, apply_packet_constituent_change, run_governed_flow_proof,
+    validate_artifact_state, validate_packet_state, AdmissibilityState,
+    ArtifactInvalidationDecision, EventRecord, EventType, FreshnessState,
 };
 
 #[test]
@@ -48,7 +49,10 @@ fn governed_flow_proof_passes_and_preserves_affected_boundaries() {
 #[test]
 fn governed_flow_mutation_detects_broken_artifact_and_packet_state() {
     let report = run_governed_flow_proof(Path::new("."));
-    assert!(report.passed(), "baseline governed flow should be green before mutation");
+    assert!(
+        report.passed(),
+        "baseline governed flow should be green before mutation"
+    );
 
     let mut artifact = base_artifact();
     artifact.freshness_state = FreshnessState::Invalidated;
@@ -69,5 +73,103 @@ fn governed_flow_mutation_detects_broken_artifact_and_packet_state() {
         packet_err.contains("reevaluation") || packet_err.contains("not_admissible"),
         "unexpected packet validation error: {}",
         packet_err
+    );
+}
+
+#[test]
+fn source_deleted_trigger_invalidates_artifact_and_downgrades_packet() {
+    let artifact = base_artifact();
+    let packet = base_packet();
+
+    let event = EventRecord {
+        event_id: "evt-source-deleted-001".into(),
+        event_type: EventType::SourceDeleted,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-09T00:00:05-04:00".into(),
+        emitter_service: "repo-watcher".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["src-tauri/src".into()],
+        causation_id: None,
+        correlation_id: "corr-source-deleted-001".into(),
+        idempotency_key: "idem-source-deleted-001".into(),
+        event_payload: "source deleted for governed flow coverage".into(),
+    };
+
+    let artifact_outcome = apply_artifact_invalidation(&event, &artifact);
+
+    assert!(artifact_outcome.overlapped);
+    assert_eq!(
+        artifact_outcome.decision,
+        ArtifactInvalidationDecision::Invalidated
+    );
+    assert_eq!(
+        artifact_outcome.artifact.freshness_state,
+        FreshnessState::Invalidated
+    );
+    assert_eq!(
+        artifact_outcome.artifact.admissibility_state,
+        AdmissibilityState::NotAdmissible
+    );
+    assert!(artifact_outcome.remediation_required);
+
+    let packet_outcome =
+        apply_packet_constituent_change(&packet, &[artifact_outcome.artifact.clone()]);
+
+    assert_eq!(packet_outcome.affected_artifact_ids, vec!["art-001"]);
+    assert!(packet_outcome.reevaluation_required);
+    assert!(packet_outcome.remediation_required);
+    assert!(packet_outcome.packet.reevaluation_required);
+    assert_eq!(
+        packet_outcome.packet.admissibility_state,
+        AdmissibilityState::NotAdmissible
+    );
+}
+
+#[test]
+fn authority_record_changed_invalidates_artifact_and_downgrades_packet() {
+    let artifact = base_artifact();
+    let packet = base_packet();
+
+    let event = EventRecord {
+        event_id: "evt-authority-record-changed-001".into(),
+        event_type: EventType::AuthorityRecordChanged,
+        schema_version: "1.0".into(),
+        emitted_at: "2026-04-10T01:00:05-04:00".into(),
+        emitter_service: "authority-governance".into(),
+        repo_id: "forge-command".into(),
+        related_artifact_ids: vec!["art-001".into()],
+        related_packet_ids: vec!["pkt-001".into()],
+        source_refs: vec!["doc/system/fcSYSTEM.md".into()],
+        causation_id: None,
+        correlation_id: "corr-authority-record-changed-001".into(),
+        idempotency_key: "idem-authority-record-changed-001".into(),
+        event_payload: "authority precedence changed for governed flow coverage".into(),
+    };
+
+    let artifact_outcome = apply_artifact_invalidation(&event, &artifact);
+
+    assert!(artifact_outcome.overlapped);
+    assert_ne!(
+        artifact_outcome.artifact.freshness_state,
+        FreshnessState::Fresh
+    );
+    assert_ne!(
+        artifact_outcome.artifact.admissibility_state,
+        AdmissibilityState::Admissible
+    );
+    assert!(artifact_outcome.remediation_required);
+
+    let packet_outcome =
+        apply_packet_constituent_change(&packet, &[artifact_outcome.artifact.clone()]);
+
+    assert_eq!(packet_outcome.affected_artifact_ids, vec!["art-001"]);
+    assert!(packet_outcome.reevaluation_required);
+    assert!(packet_outcome.remediation_required);
+    assert!(packet_outcome.packet.reevaluation_required);
+    assert_ne!(
+        packet_outcome.packet.admissibility_state,
+        AdmissibilityState::Admissible
     );
 }
