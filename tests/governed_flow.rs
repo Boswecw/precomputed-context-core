@@ -28,7 +28,7 @@ fn governed_flow_proof_passes_and_preserves_affected_boundaries() {
 
     assert_eq!(report.scenario_id, "governed_flow_v1");
     assert_eq!(report.deduped_events, 1);
-    assert_eq!(report.coalesced_batches, 1);
+    assert_eq!(report.coalesced_batches, 2);
 
     assert_eq!(report.affected_artifact_ids, vec!["art-001"]);
     assert_eq!(report.unaffected_artifact_ids, vec!["art-002"]);
@@ -39,6 +39,19 @@ fn governed_flow_proof_passes_and_preserves_affected_boundaries() {
     assert_eq!(report.final_artifact_freshness, "invalidated");
     assert_eq!(report.initial_packet_admissibility, "admissible");
     assert_eq!(report.final_packet_admissibility, "not_admissible");
+
+    assert!(
+        report
+            .steps
+            .iter()
+            .any(|step| step.step == "source_invalidation" && step.passed)
+    );
+    assert!(
+        report
+            .steps
+            .iter()
+            .any(|step| step.step == "authority_invalidation" && step.passed)
+    );
 
     assert!(report.remediation_required);
     assert_eq!(report.remediation_count, 2);
