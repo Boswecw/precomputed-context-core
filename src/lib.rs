@@ -67,3 +67,4 @@ pub mod promotion_gate;
 pub mod promotion_revocation;
 pub mod re_promotion;
 pub mod supersession_chain;
+pub mod lineage_bundle;
