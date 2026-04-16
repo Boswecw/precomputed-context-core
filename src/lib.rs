@@ -1,5 +1,6 @@
 pub mod authority;
 pub mod contracts;
+pub mod durable_evidence;
 pub mod enums;
 pub mod events;
 pub mod fixture_bundle;
@@ -18,6 +19,11 @@ pub use authority::AuthorityResolutionRecord;
 pub use contracts::{
     KeyFilePacketContract, RepoNavigationAssistPacketContract, RepoNavigationMapContract,
     ValidationCommandPacketContract,
+};
+pub use durable_evidence::{
+    ArtifactInvalidationEvidenceRecord, CoalescedBatchRecord, EvidenceAdmissionResult,
+    EvidenceBatchOutcome, EvidenceTargetKind, EventReceiptRecord,
+    PacketReevaluationEvidenceRecord, RemediationEvidenceRecord, ReplayBundleManifest,
 };
 pub use enums::*;
 pub use events::{EventBatch, EventLedger, EventProcessingDecision, EventRecord};
