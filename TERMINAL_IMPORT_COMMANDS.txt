@@ -1,0 +1,13 @@
+cd ~/Forge/ecosystem/precomputed-context-core
+unzip -o ~/Downloads/precomputed_context_core_slice_19_bundle.zip -d .
+python3 - <<'PY'
+from pathlib import Path
+p = Path('src/lib.rs')
+text = p.read_text()
+for line in ['pub mod import_policy;', 'pub mod authorization_evidence;']:
+    if line not in text:
+        text = text.rstrip() + '\n' + line + '\n'
+p.write_text(text)
+print('updated', p)
+PY
+bash scripts/verify_slice_19.sh
