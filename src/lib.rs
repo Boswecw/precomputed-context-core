@@ -57,3 +57,4 @@ pub use state_machine::{
     compute_default_artifact_admissibility, compute_default_packet_admissibility,
     validate_artifact_state, validate_packet_state,
 };
+pub mod import_contract;
