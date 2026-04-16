@@ -1,5 +1,5 @@
 use precomputed_context_core::release_attestation::{
-    build_release_attestation_receipt, default_handoff_boundary_package_dir,
+    build_release_attestation_receipt,
     default_release_attestation_downstream_source_dir,
     default_release_attestation_readiness_source_dir,
     default_release_attestation_receipt_path, default_release_attestation_workspace_current,

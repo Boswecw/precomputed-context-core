@@ -78,3 +78,4 @@ pub mod downstream_release;
 pub mod release_readiness;
 pub mod release_attestation;
 pub mod sealed_release_bundle;
+pub mod terminal_consumer_import;
