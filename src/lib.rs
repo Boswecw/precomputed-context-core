@@ -62,3 +62,4 @@ pub mod trust_envelope;
 pub mod import_authorization;
 pub mod import_policy;
 pub mod authorization_evidence;
+pub mod import_gate;
