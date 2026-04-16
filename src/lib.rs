@@ -73,3 +73,4 @@ pub mod lineage_bundle_rehydrate;
 pub mod lineage_activation;
 pub mod lineage_consumption;
 pub mod consumer_handoff;
+pub mod consumer_acknowledgment;
