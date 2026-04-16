@@ -70,3 +70,4 @@ pub mod supersession_chain;
 pub mod lineage_bundle;
 pub mod lineage_bundle_intake;
 pub mod lineage_bundle_rehydrate;
+pub mod lineage_activation;
