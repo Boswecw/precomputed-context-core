@@ -75,3 +75,4 @@ pub mod lineage_consumption;
 pub mod consumer_handoff;
 pub mod consumer_acknowledgment;
 pub mod downstream_release;
+pub mod release_readiness;
