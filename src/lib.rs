@@ -3,6 +3,8 @@ pub mod contracts;
 pub mod durable_evidence;
 pub mod enums;
 pub mod events;
+pub mod evidence_bundle;
+pub mod evidence_store;
 pub mod fixture_bundle;
 #[cfg(any(test, feature = "test-support"))]
 pub mod fixture_support;
@@ -11,6 +13,7 @@ pub mod models;
 pub mod proof;
 pub mod proof_bundle;
 pub mod remediation_flow;
+pub mod replay;
 pub mod schema_bundle;
 pub mod schema_validation;
 pub mod state_machine;
@@ -27,16 +30,27 @@ pub use durable_evidence::{
 };
 pub use enums::*;
 pub use events::{EventBatch, EventLedger, EventProcessingDecision, EventRecord};
+pub use evidence_bundle::{
+    build_and_write_replay_bundle, build_replay_bundle_manifest, load_evidence_bundle,
+    EvidenceBundleData, EvidenceBundleError,
+};
+pub use evidence_store::{EvidenceStore, EvidenceStoreError};
 pub use invalidation_engine::{
     apply_artifact_invalidation, apply_packet_constituent_change, ArtifactInvalidationDecision,
     ArtifactInvalidationOutcome, PacketInvalidationOutcome,
 };
 pub use models::{ArtifactRecord, OverrideRecord, PacketRecord, RemediationItem};
 pub use proof::report::{GovernedFlowReport, GovernedFlowStep};
-pub use proof::scenario::run_governed_flow_proof;
+pub use proof::{
+    run_governed_flow_proof, run_replay_scenario_proof, ReplayScenarioError,
+    ReplayScenarioReport,
+};
 pub use remediation_flow::{
     plan_artifact_remediation, plan_packet_remediation, remediation_required_for_packet,
     RemediationPlan, RemediationTrigger,
+};
+pub use replay::{
+    load_replay_bundle_manifest, replay_bundle, replay_bundle_by_id, ReplayError, ReplayReport,
 };
 pub use state_machine::{
     can_transition_artifact_lifecycle, can_transition_freshness,
