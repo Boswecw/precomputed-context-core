@@ -63,3 +63,5 @@ pub mod import_authorization;
 pub mod import_policy;
 pub mod authorization_evidence;
 pub mod import_gate;
+pub mod promotion_gate;
+pub mod promotion_revocation;
