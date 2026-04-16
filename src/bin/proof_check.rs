@@ -1,8 +1,68 @@
+use std::env;
 use std::path::Path;
 
-use precomputed_context_core::{run_governed_flow_proof, run_replay_scenario_proof};
+use precomputed_context_core::{
+    export_proof_package, run_governed_flow_proof, run_replay_scenario_proof,
+};
 
 fn main() {
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    if let Some(code) = handle_export_mode(&args) {
+        std::process::exit(code);
+    }
+
+    run_console_proof();
+}
+
+fn handle_export_mode(args: &[String]) -> Option<i32> {
+    if args.is_empty() {
+        return None;
+    }
+
+    let export_requested = args.iter().any(|arg| arg == "--export-package");
+    let unknown_args: Vec<&String> = args
+        .iter()
+        .filter(|arg| arg.as_str() != "--export-package")
+        .collect();
+
+    if !unknown_args.is_empty() {
+        eprintln!(
+            "unknown argument(s): {}",
+            unknown_args
+                .iter()
+                .map(|arg| arg.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        return Some(1);
+    }
+
+    if !export_requested {
+        return None;
+    }
+
+    match export_proof_package(Path::new(".")) {
+        Ok(report) => {
+            println!(
+                "slice13_export_package_root {}",
+                report.package_root.display()
+            );
+            println!(
+                "slice13_export_replay_bundle_id {}",
+                report.replay_bundle_id
+            );
+            println!("slice13_export_written true");
+            Some(0)
+        }
+        Err(err) => {
+            eprintln!("slice13_export_error {}", err);
+            Some(1)
+        }
+    }
+}
+
+fn run_console_proof() {
     let governed_report = run_governed_flow_proof(Path::new("."));
 
     println!("scenario {}", governed_report.scenario_id);

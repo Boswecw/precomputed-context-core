@@ -42,8 +42,8 @@ pub use invalidation_engine::{
 pub use models::{ArtifactRecord, OverrideRecord, PacketRecord, RemediationItem};
 pub use proof::report::{GovernedFlowReport, GovernedFlowStep};
 pub use proof::{
-    run_governed_flow_proof, run_replay_scenario_proof, ReplayScenarioError,
-    ReplayScenarioReport,
+    export_proof_package, run_governed_flow_proof, run_replay_scenario_proof, ProofExportError,
+    ProofExportReport, ReplayScenarioError, ReplayScenarioReport,
 };
 pub use remediation_flow::{
     plan_artifact_remediation, plan_packet_remediation, remediation_required_for_packet,
