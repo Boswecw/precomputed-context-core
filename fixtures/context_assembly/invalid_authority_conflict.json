@@ -1,0 +1,8 @@
+{
+  "name": "invalid_authority_conflict",
+  "expected_failure": "authority_conflict_unresolved",
+  "task_intent_id": "ti_proofread_0001",
+  "failing_payload_ref": "lore://canon/character/amara",
+  "source_class": "accepted_lore_record",
+  "authority_state": "conflict_unresolved"
+}

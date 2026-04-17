@@ -1,0 +1,38 @@
+{
+  "context_bundle_id": "ctxb_4d1f7f6a6f86d8aa",
+  "bundle_hash": "4d1f7f6a6f86d8aab7c9935b9612acaf",
+  "source_inventory": [
+    {
+      "payload_ref": "scene://chapter-03/scene-07",
+      "source_class": "active_scene",
+      "age_minutes": 3,
+      "authority_state": "accepted",
+      "is_override": false
+    },
+    {
+      "payload_ref": "scene-summary://chapter-03/scene-06",
+      "source_class": "adjacent_scene_summary_or_clipped_body",
+      "age_minutes": 15,
+      "authority_state": "accepted",
+      "is_override": false
+    },
+    {
+      "payload_ref": "lore://canon/character/amara",
+      "source_class": "accepted_lore_record",
+      "age_minutes": 11,
+      "authority_state": "accepted",
+      "is_override": false
+    },
+    {
+      "payload_ref": "style://house/minimize-adverbs",
+      "source_class": "accepted_style_rule_record",
+      "age_minutes": 8,
+      "authority_state": "accepted",
+      "is_override": false
+    }
+  ],
+  "freshness_band": "fresh",
+  "override_decision": "no_override_present",
+  "authority_conflict_flag": false,
+  "replay_eligibility": "eligible"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "invalid_stale_context",
+  "expected_failure": "stale_source",
+  "task_intent_id": "ti_proofread_0001",
+  "failing_payload_ref": "scene://chapter-03/scene-07",
+  "source_class": "active_scene",
+  "age_minutes": 121,
+  "max_source_age_minutes": 120
+}

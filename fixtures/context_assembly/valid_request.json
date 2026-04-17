@@ -1,0 +1,25 @@
+{
+  "task_intent_id": "ti_proofread_0001",
+  "task_family": "proofread",
+  "task_version": "lore_safe.v1",
+  "target_refs": {
+    "active_scene_ref": "scene://chapter-03/scene-07",
+    "adjacent_scene_ref": "scene-summary://chapter-03/scene-06",
+    "accepted_lore_record_refs": [
+      "lore://canon/character/amara"
+    ],
+    "accepted_style_rule_refs": [
+      "style://house/minimize-adverbs"
+    ]
+  },
+  "allowed_source_classes": [
+    "active_scene",
+    "adjacent_scene_summary_or_clipped_body",
+    "accepted_lore_record",
+    "accepted_style_rule_record"
+  ],
+  "freshness_policy": {
+    "max_source_age_minutes": 120
+  },
+  "override_posture": "disallow_all"
+}

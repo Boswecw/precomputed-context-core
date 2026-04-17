@@ -1,5 +1,6 @@
 pub mod authority;
 pub mod contracts;
+pub mod context_assembly;
 pub mod durable_evidence;
 pub mod enums;
 pub mod events;
@@ -22,6 +23,12 @@ pub use authority::AuthorityResolutionRecord;
 pub use contracts::{
     KeyFilePacketContract, RepoNavigationAssistPacketContract, RepoNavigationMapContract,
     ValidationCommandPacketContract,
+};
+pub use context_assembly::{
+    assemble_context, AuthorityState, ContextAssemblyError, ContextAssemblyOutput,
+    ContextAssemblyRequest, ContextBundleManifest, FreshnessBand, FreshnessPolicy,
+    OverrideDecision, OverridePosture, ReplayEligibility, SourceClass, SourceInput,
+    SourceInventoryEntry, TargetRefs,
 };
 pub use durable_evidence::{
     ArtifactInvalidationEvidenceRecord, CoalescedBatchRecord, EvidenceAdmissionResult,

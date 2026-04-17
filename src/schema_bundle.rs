@@ -10,6 +10,7 @@ use crate::contracts::{
     ValidationCommandPacketContract,
 };
 use crate::events::EventRecord;
+use crate::context_assembly::{ContextAssemblyRequest, ContextBundleManifest};
 use crate::models::{OverrideRecord, RemediationItem};
 
 pub fn schema_catalog() -> Vec<(&'static str, Value)> {
@@ -38,6 +39,16 @@ pub fn schema_catalog() -> Vec<(&'static str, Value)> {
             "repo_navigation_assist_packet_contract.schema.json",
             serde_json::to_value(schema_for!(RepoNavigationAssistPacketContract))
                 .expect("repo navigation assist packet schema to serialize"),
+        ),
+        (
+            "context_assembly_request.schema.json",
+            serde_json::to_value(schema_for!(ContextAssemblyRequest))
+                .expect("context assembly request schema to serialize"),
+        ),
+        (
+            "context_bundle_manifest.schema.json",
+            serde_json::to_value(schema_for!(ContextBundleManifest))
+                .expect("context bundle manifest schema to serialize"),
         ),
         (
             "event_record.schema.json",
