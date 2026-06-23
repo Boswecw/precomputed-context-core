@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AuthorityState": {
+      "enum": [
+        "Accepted",
+        "ConflictResolved",
+        "ConflictUnresolved"
+      ],
+      "type": "string"
+    },
+    "FreshnessBand": {
+      "enum": [
+        "Fresh",
+        "NearLimit"
+      ],
+      "type": "string"
+    },
+    "OverrideDecision": {
+      "enum": [
+        "NoOverridePresent",
+        "AllowedStyleRuleOverrideUsed"
+      ],
+      "type": "string"
+    },
+    "ReplayEligibility": {
+      "enum": [
+        "Eligible"
+      ],
+      "type": "string"
+    },
+    "SourceClass": {
+      "enum": [
+        "ActiveScene",
+        "AdjacentSceneSummaryOrClippedBody",
+        "AcceptedLoreRecord",
+        "AcceptedStyleRuleRecord",
+        "ExperimentalFutureSource"
+      ],
+      "type": "string"
+    },
+    "SourceInventoryEntry": {
+      "properties": {
+        "age_minutes": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "authority_state": {
+          "$ref": "#/definitions/AuthorityState"
+        },
+        "is_override": {
+          "type": "boolean"
+        },
+        "payload_ref": {
+          "type": "string"
+        },
+        "source_class": {
+          "$ref": "#/definitions/SourceClass"
+        }
+      },
+      "required": [
+        "age_minutes",
+        "authority_state",
+        "is_override",
+        "payload_ref",
+        "source_class"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "authority_conflict_flag": {
+      "type": "boolean"
+    },
+    "bundle_hash": {
+      "type": "string"
+    },
+    "context_bundle_id": {
+      "type": "string"
+    },
+    "freshness_band": {
+      "$ref": "#/definitions/FreshnessBand"
+    },
+    "override_decision": {
+      "$ref": "#/definitions/OverrideDecision"
+    },
+    "replay_eligibility": {
+      "$ref": "#/definitions/ReplayEligibility"
+    },
+    "source_inventory": {
+      "items": {
+        "$ref": "#/definitions/SourceInventoryEntry"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "authority_conflict_flag",
+    "bundle_hash",
+    "context_bundle_id",
+    "freshness_band",
+    "override_decision",
+    "replay_eligibility",
+    "source_inventory"
+  ],
+  "title": "ContextBundleManifest",
+  "type": "object"
+}
