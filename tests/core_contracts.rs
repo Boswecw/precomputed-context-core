@@ -437,12 +437,14 @@ fn schema_catalog_contains_expected_contract_surfaces() {
         .map(|(name, _)| *name)
         .collect();
 
-    assert_eq!(names.len(), 8);
+    assert_eq!(names.len(), 10);
     assert!(names.contains(&"authority_resolution_record.schema.json"));
     assert!(names.contains(&"repo_navigation_map_contract.schema.json"));
     assert!(names.contains(&"key_file_packet_contract.schema.json"));
     assert!(names.contains(&"validation_command_packet_contract.schema.json"));
     assert!(names.contains(&"repo_navigation_assist_packet_contract.schema.json"));
+    assert!(names.contains(&"context_assembly_request.schema.json"));
+    assert!(names.contains(&"context_bundle_manifest.schema.json"));
     assert!(names.contains(&"event_record.schema.json"));
     assert!(names.contains(&"remediation_item.schema.json"));
     assert!(names.contains(&"override_record.schema.json"));

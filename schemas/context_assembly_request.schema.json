@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AuthorityState": {
+      "enum": [
+        "Accepted",
+        "ConflictResolved",
+        "ConflictUnresolved"
+      ],
+      "type": "string"
+    },
+    "FreshnessPolicy": {
+      "properties": {
+        "max_source_age_minutes": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_source_age_minutes"
+      ],
+      "type": "object"
+    },
+    "OverridePosture": {
+      "enum": [
+        "DisallowAll",
+        "AllowAcceptedStyleRuleRecords"
+      ],
+      "type": "string"
+    },
+    "SourceClass": {
+      "enum": [
+        "ActiveScene",
+        "AdjacentSceneSummaryOrClippedBody",
+        "AcceptedLoreRecord",
+        "AcceptedStyleRuleRecord",
+        "ExperimentalFutureSource"
+      ],
+      "type": "string"
+    },
+    "SourceInput": {
+      "properties": {
+        "age_minutes": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "authority_state": {
+          "$ref": "#/definitions/AuthorityState"
+        },
+        "is_override": {
+          "type": "boolean"
+        },
+        "payload_ref": {
+          "type": "string"
+        },
+        "source_class": {
+          "$ref": "#/definitions/SourceClass"
+        }
+      },
+      "required": [
+        "age_minutes",
+        "authority_state",
+        "is_override",
+        "payload_ref",
+        "source_class"
+      ],
+      "type": "object"
+    },
+    "TargetRefs": {
+      "properties": {
+        "accepted_lore_record_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "accepted_style_rule_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "active_scene_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "adjacent_scene_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "accepted_lore_record_refs",
+        "accepted_style_rule_refs"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "allowed_source_classes": {
+      "items": {
+        "$ref": "#/definitions/SourceClass"
+      },
+      "type": "array"
+    },
+    "freshness_policy": {
+      "$ref": "#/definitions/FreshnessPolicy"
+    },
+    "override_posture": {
+      "$ref": "#/definitions/OverridePosture"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/definitions/SourceInput"
+      },
+      "type": "array"
+    },
+    "target_refs": {
+      "$ref": "#/definitions/TargetRefs"
+    },
+    "task_family": {
+      "type": "string"
+    },
+    "task_intent_id": {
+      "type": "string"
+    },
+    "task_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_source_classes",
+    "freshness_policy",
+    "override_posture",
+    "sources",
+    "target_refs",
+    "task_family",
+    "task_intent_id",
+    "task_version"
+  ],
+  "title": "ContextAssemblyRequest",
+  "type": "object"
+}
